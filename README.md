@@ -4,6 +4,7 @@ Financial Inclusion with decentralized ISO20022 as a microservice.
 ## 1. Build Instructions
 - Run "start.cmd"
 
+## 2. Sequence Diagram
 A sequence diagram for sending and recieving a pacs.008 message with the application.
 PaymentA and ServiceA are a part of the same application instance.
 
