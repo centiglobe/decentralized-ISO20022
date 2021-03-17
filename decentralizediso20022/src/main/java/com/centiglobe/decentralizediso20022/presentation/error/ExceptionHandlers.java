@@ -22,6 +22,7 @@ import org.springframework.stereotype.Controller;
 @ControllerAdvice
 public class ExceptionHandlers implements ErrorController {
 
+    private static final String ERR_PATH = "/error";
     private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionHandlers.class);
     
     /**
@@ -54,13 +55,13 @@ public class ExceptionHandlers implements ErrorController {
      * @param request The HTTP request that was sent
      * @return An error response
      */
-    @RequestMapping("/error")
+    @RequestMapping(ERR_PATH)
     public ResponseEntity handleError(HttpServletRequest request) {
         Object statusAttr = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
 
         // If there was no status attribute, default to 404
         int status = statusAttr != null ? Integer.parseInt(statusAttr.toString()) : 404;
-        LOGGER.debug("Showing error view with status " + status + ".");
+        LOGGER.debug("Returing status " + status + ".");
 
         return generateResponse(HttpStatus.valueOf(status), null);
     }
@@ -80,6 +81,6 @@ public class ExceptionHandlers implements ErrorController {
      */
     @Override
     public String getErrorPath() {
-        return "/error";
+        return ERR_PATH;
     }
 }
