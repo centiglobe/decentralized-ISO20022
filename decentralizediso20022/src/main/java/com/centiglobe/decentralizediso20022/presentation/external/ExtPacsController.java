@@ -30,16 +30,15 @@ public class ExtPacsController {
 
     @GetMapping(value = {"/008", "/008/{var}", "/008/{var}/{ver}"})
     public Map<String, String> getPacs008(@PathVariable(required = false) String var,
-                             @PathVariable(required = false) String ver) {
+                             @PathVariable(required = false) String ver) throws Exception {
         String resp = "Get request for external /pacs/008/" + var + "/" + ver;
-        LOGGER.debug(resp);
-        return Collections.singletonMap("response", resp);
+        throw new Exception(resp);
+        /*LOGGER.debug(resp);
+        return Collections.singletonMap("response", resp);*/
     }
 
     @PostMapping("/008/{var}/{ver}")
     public String handlePacs008() {
         return "OK";
     }
-
-    
 }
