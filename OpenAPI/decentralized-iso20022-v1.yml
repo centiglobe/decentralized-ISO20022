@@ -1,0 +1,83 @@
+openapi: 3.0.3
+info:
+  title: Decentralized ISO 20022 API
+  description: This is the API specificaiton for the API's in the decentralized ISO 20022 microservice.
+  version: 1.0.0
+servers:
+  - url: http://api.localhost.com/
+    description: Endpoint example.
+# "Start" and "Outgoing" are currently WIP names.
+tags:
+  - name: Start
+    description: For third parties to innitiate a transaction.
+  - name: Outgoing
+    description: For the API owner to innitiate a transaction with another financial institution.
+# WIP
+paths:
+  /start/v1/pacs/008/001/09:
+    post:
+      tags:
+        - Start
+      summary: Send a pacs.008.001.09 message with the header head.001.001.02.
+      description: The end point where the financial insitution tells the microservice to start a transaction with another financial institution.<br><br>A valid pacs.008.001.009 message should be sent with the header head.001.001.02.
+      requestBody:
+        $ref: '#/components/requestBodies/pacs.008.001.09Body'
+          
+      responses:
+        '200':
+          description: A pacs.002.001.12 message with the header head.001.001.02.
+          content:
+            application/xml:
+              schema: 
+                type: array
+                items: 
+                  type: string
+# WIP
+  /outgoing/v1/pacs/008/001/10:
+    post:
+      tags:
+        - Outgoing
+      summary: Send a pacs.008.001.09 message to another financial institution.
+      description: The end point the microservice will send the pacs.008.001.09 messages to.
+      responses:
+        '200':
+          description: A JSON array of user names
+          content:
+            application/xml:
+              schema: 
+                type: array
+                items: 
+                  type: string
+# WIP
+components:
+  schemas:
+    RequestPayloadPacs.008.001.09:
+      type: object
+      xml:
+        attribute: false
+        wrapped: false
+        name: RequestPayload
+      properties:
+        AppHdr:
+          $ref: '#/components/schemas/AppHdr'
+        Document:
+          $ref: '#/components/schemas/Document'
+    AppHdr:
+      type: object
+      properties:
+        something:
+          type: string
+    Document:
+      type: object
+      properties:
+        something:
+          type: string
+    RequestPayloadPacs.002.001.11:
+      type: object
+  requestBodies:
+    pacs.008.001.09Body:
+      content:
+        application/xml:
+          schema:
+           $ref: '#/components/schemas/RequestPayloadPacs.008.001.09'
+            
