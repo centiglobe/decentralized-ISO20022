@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import static com.centiglobe.decentralizediso20022.application.ValidationService.validateHeaderFrom;
 import static com.centiglobe.decentralizediso20022.application.ValidationService.validateHeaderTo;
-import static com.centiglobe.decentralizediso20022.application.ValidationService.checkSSLCertificate;
 
 import java.io.IOException;
 
@@ -17,14 +16,52 @@ import com.prowidesoftware.swift.utils.Lib;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * Tests for the validation service.
+ * 
+ * These tests use the trust store from google
+ * https://github.com/googleapis/google-api-java-client/blob/master/google-api-client/src/main/resources/com/google/api/client/googleapis/google.jks
+ * Place it in the resources folder to run the tests as intenden.
+ * 
+ * @author Cactu5
+ */
 public class ValidationServiceTest {
+
+    private final static String trustStore1 = "google.jks";
+    private final static String pwd1 = "notasecret";
+
+    @Test
+    public void testNotTrusted() throws Exception {
+
+        MxPacs00800109 mx = MxPacs00800109.parse(Lib.readResource("headerCertNotTrusted.xml"));
+
+        String msg = "unable to find valid certification path to requested target";
+
+        testInvalidHeaderCustom(mx, msg, trustStore1, pwd1);
+
+    }
+
+    // This test will fail as the function currently allows for public key pinning
+    // this is somthing not supported by most browsers.
+    // Might be good to make this test pass by throwing an error if public key
+    // pinning is being used.
+    @Test
+    public void testValidPinning() throws Exception {
+
+        MxPacs00800109 mx = MxPacs00800109.parse(Lib.readResource("headerCertPinningTest.xml"));
+
+        String msg = "unknown"; // no errors are thrown currently, so no message
+
+        testInvalidHeaderCustom(mx, msg, trustStore1, pwd1);
+    }
+
     @Test
     public void testValidHeader() throws Exception {
 
         MxPacs00800109 mx = MxPacs00800109.parse(Lib.readResource("example1WithHeader.xml"));
 
-        validateHeaderFrom((BusinessAppHdrV02) mx.getAppHdr(), null, null);
-        validateHeaderTo((BusinessAppHdrV02) mx.getAppHdr(), null, null);
+        validateHeaderFrom((BusinessAppHdrV02) mx.getAppHdr(), trustStore1, pwd1);
+        validateHeaderTo((BusinessAppHdrV02) mx.getAppHdr(), trustStore1, pwd1);
 
     }
 
@@ -34,21 +71,9 @@ public class ValidationServiceTest {
 
         String msg = "validity check failed";
 
-        testInvalidHeader(mx, msg);
+        testInvalidHeaderCustom(mx, msg, trustStore1, pwd1);
 
     }
-
-    // @Test
-    // public void testExpired() {
-
-    // Exception e = assertThrows(SSLHandshakeException.class, () -> {
-    // ValidationService.checkSSLCertificate("https://expired.badssl.com/", null,
-    // null);
-    // });
-
-    // assertTrue(e.getMessage().contains("validity check failed"));
-
-    // }
 
     @Test
     public void testWrongHost() throws IOException {
@@ -56,7 +81,7 @@ public class ValidationServiceTest {
 
         String msg = "No subject alternative DNS name matching wrong.host.badssl.com found";
 
-        testInvalidHeader(mx, msg);
+        testInvalidHeaderCustom(mx, msg, trustStore1, pwd1);
     }
 
     @Test
@@ -65,7 +90,7 @@ public class ValidationServiceTest {
 
         String msg = "unable to find valid certification path to requested target";
 
-        testInvalidHeader(mx, msg);
+        testInvalidHeaderCustom(mx, msg, trustStore1, pwd1);
     }
 
     @Test
@@ -74,29 +99,29 @@ public class ValidationServiceTest {
 
         String msg = "unable to find valid certification path to requested target";
 
-        testInvalidHeader(mx, msg);
+        testInvalidHeaderCustom(mx, msg, trustStore1, pwd1);
     }
 
-    // Need to check why no error is thrown.
     @Test
     public void testRevoked() throws IOException {
         MxPacs00800109 mx = MxPacs00800109.parse(Lib.readResource("headerCertRevoked.xml"));
 
-        String msg = "gdfgdfgfd";
+        String msg = "Certificate has been revoked";
 
-        testInvalidHeader(mx, msg);
+        testInvalidHeaderCustom(mx, msg, trustStore1, pwd1);
     }
 
-    private void testInvalidHeader(MxPacs00800109 mx, String msg) {
+    private void testInvalidHeaderCustom(MxPacs00800109 mx, String msg, String tuststore, String pwd) {
         Exception e = assertThrows(SSLHandshakeException.class, () -> {
-            validateHeaderFrom((BusinessAppHdrV02) mx.getAppHdr(), null, null);
+            validateHeaderFrom((BusinessAppHdrV02) mx.getAppHdr(), tuststore, pwd);
         });
 
         Exception e2 = assertThrows(SSLHandshakeException.class, () -> {
-            validateHeaderTo((BusinessAppHdrV02) mx.getAppHdr(), null, null);
+            validateHeaderTo((BusinessAppHdrV02) mx.getAppHdr(), tuststore, pwd);
         });
 
-        System.out.println(e.getCause());
+        // System.out.println(e.getCause());
+        // System.out.println(e2.getCause());
 
         assertTrue(e.getMessage().contains(msg));
         assertTrue(e2.getMessage().contains(msg));

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.prowidesoftware.swift.model.mx.BusinessAppHdrV02;
 
-import static com.centiglobe.decentralizediso20022.util.HTTPSCustomTruststore.configureCustom;
+import static com.centiglobe.decentralizediso20022.util.HTTPSCustomTruststore.configureTruststore;
 import com.centiglobe.decentralizediso20022.util.HttpResponse;
 
 import java.io.BufferedReader;
@@ -45,7 +45,7 @@ public class IntMessageService {
 
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
-        configureCustom(conn, TRUST_STORE, TRUST_PASS);
+        configureTruststore(conn, TRUST_STORE, TRUST_PASS);
         conn.setDoOutput(true);
         conn.setRequestProperty("Content-Length", "" + encoded.length);
         conn.getOutputStream().write(encoded);

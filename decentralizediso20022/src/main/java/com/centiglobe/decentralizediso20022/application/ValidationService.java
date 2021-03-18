@@ -6,7 +6,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 import com.prowidesoftware.swift.model.mx.BusinessAppHdrV02;
 
-import static com.centiglobe.decentralizediso20022.util.HTTPSCustomTruststore.configureCustom;
+import static com.centiglobe.decentralizediso20022.util.HTTPSCustomTruststore.configureTruststore;
 
 /**
  * A Validation service used for validating SSL certificates.
@@ -17,11 +17,8 @@ public class ValidationService {
 
     /**
      * Validates the domain nested in the To element based off the domain's SSL
-     * certificate. The certificate must be present in the specified truststore for
-     * it to be valid.
-     * 
-     * To use the default truststore enter <code>NULL</code> as the argument for
-     * <code>truststore</code> and <code>pwd</code>.
+     * certificate. The certificate must also be present in the specified truststore
+     * for it to be valid.
      * 
      * @param header     the header
      * @param truststore the truststore path
@@ -32,62 +29,53 @@ public class ValidationService {
         String domain = header.getTo().getFIId().getFinInstnId().getNm();
 
         if (truststore != null && pwd != null) {
-
             checkSSLCertificate("https://" + domain, truststore, pwd);
 
         } else {
-
-            checkSSLCertificate("https://" + domain, null, null);
+            throw new Exception("The truststore and password cannot be null.");
 
         }
     }
 
     /**
-     * Validates the domain nested in the Fr element based off the domain's SSL
+     * Validates the domain name nested in the Fr element based off the domain's SSL
      * certificate. The certificate must be present in the specified truststore for
      * it to be valid.
      * 
-     * To use the default truststore enter <code>NULL</code> as the argument for
-     * <code>truststore</code> and <code>pwd</code>.
-     * 
-     * @param header     the header
-     * @param truststore the truststore path
-     * @param pwd        the password for the truststore
+     * @param header         the header
+     * @param truststorePath the truststore path
+     * @param pwd            the password for the truststore
      * @throws Exception if the header is not valid
      */
-    public static void validateHeaderFrom(BusinessAppHdrV02 header, String truststore, String pwd) throws Exception {
+    public static void validateHeaderFrom(BusinessAppHdrV02 header, String truststorePath, String pwd)
+            throws Exception {
         String domain = header.getFr().getFIId().getFinInstnId().getNm();
 
-        if (truststore != null && pwd != null) {
-
-            checkSSLCertificate("https://" + domain, truststore, pwd);
+        if (truststorePath != null && pwd != null) {
+            checkSSLCertificate("https://" + domain, truststorePath, pwd);
 
         } else {
-
-            checkSSLCertificate("https://" + domain, null, null);
+            throw new Exception("The truststore and password cannot be null.");
 
         }
     }
 
     /**
-     * Checks that the SSL certificate is valid on the specified URL. Uses the
-     * specified truststore.
+     * Checks that the SSL certificate is valid on the specified domain name. Uses
+     * the specified truststore.
      * 
-     * To use the default truststore enter <code>NULL</code> as the argument for
-     * <code>truststore</code> and <code>pwd</code>.
-     * 
-     * @param urlString  the URL
-     * @param truststore the truststore path
-     * @param pwd        the password for the truststore
+     * @param urlString      the URL
+     * @param truststorePath the truststore path
+     * @param pwd            the password for the truststore
      * @throws Exception if the SSL certificate is not valid
      */
-    public static void checkSSLCertificate(String urlString, String truststore, String pwd) throws Exception {
+    public static void checkSSLCertificate(String urlString, String truststorePath, String pwd) throws Exception {
         URL url = new URL(urlString);
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
 
-        if (truststore != null) {
-            configureCustom(conn, truststore, pwd);
+        if (truststorePath != null && pwd != null) {
+            configureTruststore(conn, truststorePath, pwd);
         }
 
         conn.connect();
