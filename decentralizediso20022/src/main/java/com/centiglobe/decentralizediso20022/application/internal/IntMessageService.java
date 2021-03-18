@@ -46,6 +46,8 @@ public class IntMessageService {
     public ResponseEntity send(AbstractMX mx) throws Exception {
         String host = ((BusinessAppHdrV02)mx.getAppHdr()).getTo().getFIId().getFinInstnId().getNm();
         byte[] encoded = mx.message().getBytes("utf-8");
+
+        // TODO: Explore possibility of dynamic port?
         URL url = new URL("https://" + host + ":8443" + endpointOf(mx));
 
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
