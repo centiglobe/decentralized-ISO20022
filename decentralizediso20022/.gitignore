@@ -1,5 +1,8 @@
 HELP.md
 target/
+bin/
+src/main/resources/keystore.p12
+src/main/resources/truststore.p12
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

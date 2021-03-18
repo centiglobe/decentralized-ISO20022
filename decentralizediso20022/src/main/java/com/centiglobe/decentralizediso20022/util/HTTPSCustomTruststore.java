@@ -28,7 +28,7 @@ public class HTTPSCustomTruststore {
     public static void configureCustom(HttpsURLConnection connection, String truststore, String pwd) throws Exception {
         TrustManagerFactory trustManagerFactory = TrustManagerFactory
                 .getInstance(TrustManagerFactory.getDefaultAlgorithm());
-        KeyStore keystore = KeyStore.getInstance("JKS");
+        KeyStore keystore = KeyStore.getInstance("PKCS12");
         InputStream keystoreStream = HTTPSCustomTruststore.class.getClassLoader().getResourceAsStream(truststore);
         keystore.load(keystoreStream, pwd.toCharArray());
         trustManagerFactory.init(keystore);
