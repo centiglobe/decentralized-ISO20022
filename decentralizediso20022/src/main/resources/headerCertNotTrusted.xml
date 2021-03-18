@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<RequestPayload>
+    <h:AppHdr xmlns:h="urn:iso:std:iso:20022:tech:xsd:head.001.001.02">
+        <h:Fr>
+            <h:FIId>
+                <h:FinInstnId>
+                    <h:Nm>www.aragon.es</h:Nm>
+                </h:FinInstnId>
+            </h:FIId>
+        </h:Fr>
+        <h:To>
+            <h:FIId>
+                <h:FinInstnId>
+                    <h:Nm>www.aragon.es</h:Nm>
+                </h:FinInstnId>
+            </h:FIId>
+        </h:To>
+        <h:BizMsgIdr>12312312312</h:BizMsgIdr>
+        <h:MsgDefIdr>pacs.008.001.09</h:MsgDefIdr>
+        <h:CreDt>2021-03-17T15:30:06.364+01:00</h:CreDt>
+    </h:AppHdr>
+    <Doc:Document xmlns:Doc="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.09">
+        <Doc:FIToFICstmrCdtTrf>
+            <Doc:GrpHdr>
+                <Doc:MsgId>TBEXO12345</Doc:MsgId>
+                <Doc:CreDtTm>2021-03-17T15:30:05.881+01:00</Doc:CreDtTm>
+                <Doc:NbOfTxs>1</Doc:NbOfTxs>
+                <Doc:SttlmInf>
+                    <Doc:SttlmMtd>INDA</Doc:SttlmMtd>
+                </Doc:SttlmInf>
+            </Doc:GrpHdr>
+            <Doc:CdtTrfTxInf>
+                <Doc:PmtId>
+                    <Doc:EndToEndId>TBEXO12345</Doc:EndToEndId>
+                    <Doc:UETR>13c323d3-af2d-4b38-a0f5-2e6cf17d2864</Doc:UETR>
+                </Doc:PmtId>
+                <Doc:IntrBkSttlmAmt Ccy="EUR">100</Doc:IntrBkSttlmAmt>
+                <Doc:ChrgBr>DEBT</Doc:ChrgBr>
+                <Doc:Dbtr>
+                    <Doc:Nm>JOE DOE</Doc:Nm>
+                    <Doc:PstlAdr>
+                        <Doc:AdrLine>310 Field Road, NY</Doc:AdrLine>
+                    </Doc:PstlAdr>
+                </Doc:Dbtr>
+                <Doc:DbtrAgt>
+                    <Doc:FinInstnId>
+                        <Doc:BICFI>FOOBARC0XXX</Doc:BICFI>
+                    </Doc:FinInstnId>
+                </Doc:DbtrAgt>
+                <Doc:CdtrAgt>
+                    <Doc:FinInstnId>
+                        <Doc:BICFI>BANKANC0XXX</Doc:BICFI>
+                    </Doc:FinInstnId>
+                </Doc:CdtrAgt>
+                <Doc:Cdtr>
+                    <Doc:Nm>TEST CORP</Doc:Nm>
+                    <Doc:PstlAdr>
+                        <Doc:AdrLine>Nellis ABC, NV</Doc:AdrLine>
+                    </Doc:PstlAdr>
+                </Doc:Cdtr>
+            </Doc:CdtTrfTxInf>
+        </Doc:FIToFICstmrCdtTrf>
+    </Doc:Document>
+</RequestPayload>
