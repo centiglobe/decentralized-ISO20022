@@ -100,7 +100,7 @@ public class ExceptionHandlers implements ErrorController {
 
             if (message != null) {
                 Element msg = doc.createElement("message");
-                rawStatus.setTextContent(message);
+                msg.setTextContent(message);
                 root.appendChild(msg);
             }
             doc.appendChild(root);
