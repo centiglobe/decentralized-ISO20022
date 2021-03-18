@@ -2,20 +2,23 @@ package com.centiglobe.decentralizediso20022.application.internal;
 
 import com.prowidesoftware.swift.model.mx.AbstractMX;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.prowidesoftware.swift.model.mx.BusinessAppHdrV02;
 
 import static com.centiglobe.decentralizediso20022.util.HTTPSCustomTruststore.configureTruststore;
-import com.centiglobe.decentralizediso20022.util.HttpResponse;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +27,8 @@ import javax.net.ssl.HttpsURLConnection;
 @Profile("internal")
 @Service
 public class IntMessageService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(IntMessageService.class);
 
     @Value("${server.ssl.trust-store}")
     private String TRUST_STORE;
@@ -38,7 +43,7 @@ public class IntMessageService {
      * @return The HTTP response sent by the recipent host
      * @throws Exception If sending the message failed
      */
-    public HttpResponse send(AbstractMX mx) throws Exception {
+    public ResponseEntity send(AbstractMX mx) throws Exception {
         String host = ((BusinessAppHdrV02)mx.getAppHdr()).getTo().getFIId().getFinInstnId().getNm();
         byte[] encoded = mx.message().getBytes("utf-8");
         URL url = new URL("https://" + host + ":8443" + endpointOf(mx));
@@ -53,25 +58,30 @@ public class IntMessageService {
         return getHttpsResponse(conn);
     }
 
-    private HttpResponse getHttpsResponse(HttpsURLConnection con) throws IOException {
-        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream(), "utf-8"));
+    private ResponseEntity getHttpsResponse(HttpsURLConnection con) throws IOException {
+        InputStream reader = hasErrorResponse(con) ? con.getErrorStream() : con.getInputStream();
+        BufferedReader in = new BufferedReader(new InputStreamReader(reader, "utf-8"));
         StringBuilder respReader = new StringBuilder();
         String row;
         while ((row = in.readLine()) != null) {
             respReader.append(row + "\n");
         }
-        Hashtable<String, String> headers = new Hashtable<String, String>();
+        HttpHeaders headers = new HttpHeaders();
         Map<String, List<String>> conHeaders = con.getHeaderFields();
         for (String header : conHeaders.keySet()) {
             if (header != null) {
-                headers.put(header, conHeaders.get(header).get(0));
+                headers.add(header, conHeaders.get(header).get(0));
             }
         }
         String body = respReader.toString();
-        return new HttpResponse(con.getResponseCode(), headers, body);
+        return ResponseEntity.status(con.getResponseCode()).headers(headers).body(body);
+    }
+
+    private boolean hasErrorResponse(HttpsURLConnection con) throws IOException {
+        return con.getResponseCode() > 299;
     }
 
     private String endpointOf(AbstractMX mx) {
-        return "/external/v1/" + mx.getBusinessProcess();
+        return "/external/v1/" + mx.getBusinessProcess() + "/";
     }
 }

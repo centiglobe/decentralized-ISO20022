@@ -14,6 +14,7 @@ public class ExtMessageService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExtMessageService.class);
     
     /**
+     * Sends an ISO 20022 message using to the private bank system
      * 
      * @param mx The ISO 20022 message to send
      */
