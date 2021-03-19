@@ -41,6 +41,9 @@ public class IntPacsController {
 
     @Value("${server.ssl.trust-store-password}")
     private String TRUST_PASS;
+
+    @Value("${recipient.port}")
+    private String PORT;
     
     @Autowired
     private IntMessageService msgService;
@@ -56,8 +59,9 @@ public class IntPacsController {
         
         BusinessAppHdrV02 header = (BusinessAppHdrV02) mx.getAppHdr();
         try {
-            ValidationService.validateHeaderFrom(header, TRUST_STORE, TRUST_PASS);
-            ValidationService.validateHeaderTo(header, TRUST_STORE, TRUST_PASS);
+            int port = Integer.parseInt(PORT);
+            ValidationService.validateHeaderFrom(header, port, TRUST_STORE, TRUST_PASS);
+            ValidationService.validateHeaderTo(header, port, TRUST_STORE, TRUST_PASS);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The entity had an invalid from or to header.");
         }

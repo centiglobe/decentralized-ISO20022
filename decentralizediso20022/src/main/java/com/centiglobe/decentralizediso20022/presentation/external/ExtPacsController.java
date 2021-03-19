@@ -45,6 +45,9 @@ public class ExtPacsController {
 
     @Value("${server.ssl.trust-store-password}")
     private String TRUST_PASS;
+
+    @Value("${recipient.port}")
+    private String PORT;
     
     @Autowired
     private ExtMessageService msgService;
@@ -64,8 +67,9 @@ public class ExtPacsController {
         try {
             // Extract path relative to the classpath
             String truststore = new File(TRUST_STORE).getName();
-            ValidationService.validateHeaderFrom(header, truststore, TRUST_PASS);
-            ValidationService.validateHeaderTo(header, truststore, TRUST_PASS);
+            int port = Integer.parseInt(PORT);
+            ValidationService.validateHeaderFrom(header, port, truststore, TRUST_PASS);
+            ValidationService.validateHeaderTo(header, port, truststore, TRUST_PASS);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The entity had an invalid from or to header.");
         }

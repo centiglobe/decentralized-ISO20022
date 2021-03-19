@@ -62,8 +62,8 @@ public class ValidationServiceTest {
 
         MxPacs00800109 mx = MxPacs00800109.parse(Lib.readResource("example1WithHeader.xml"));
 
-        validateHeaderFrom((BusinessAppHdrV02) mx.getAppHdr(), trustStore1, pwd1);
-        validateHeaderTo((BusinessAppHdrV02) mx.getAppHdr(), trustStore1, pwd1);
+        validateHeaderFrom((BusinessAppHdrV02) mx.getAppHdr(), 443, trustStore1, pwd1);
+        validateHeaderTo((BusinessAppHdrV02) mx.getAppHdr(), 443, trustStore1, pwd1);
 
     }
 
@@ -115,11 +115,11 @@ public class ValidationServiceTest {
 
     private void testInvalidHeaderCustom(MxPacs00800109 mx, String msg, String tuststore, String pwd) {
         Exception e = assertThrows(SSLHandshakeException.class, () -> {
-            validateHeaderFrom((BusinessAppHdrV02) mx.getAppHdr(), tuststore, pwd);
+            validateHeaderFrom((BusinessAppHdrV02) mx.getAppHdr(), 443, tuststore, pwd);
         });
 
         Exception e2 = assertThrows(SSLHandshakeException.class, () -> {
-            validateHeaderTo((BusinessAppHdrV02) mx.getAppHdr(), tuststore, pwd);
+            validateHeaderTo((BusinessAppHdrV02) mx.getAppHdr(), 443, tuststore, pwd);
         });
 
         // System.out.println(e.getCause());
