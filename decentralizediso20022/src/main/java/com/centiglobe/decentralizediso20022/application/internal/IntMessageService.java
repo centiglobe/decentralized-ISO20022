@@ -30,6 +30,9 @@ public class IntMessageService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IntMessageService.class);
 
+    @Value("${server.servlet.context-path}")
+    private String CONTEXT_PATH;
+
     @Value("${server.ssl.trust-store}")
     private String TRUST_STORE;
 
@@ -84,6 +87,6 @@ public class IntMessageService {
     }
 
     private String endpointOf(AbstractMX mx) {
-        return "/external/v1/" + mx.getBusinessProcess() + "/";
+        return CONTEXT_PATH + "/v1/" + mx.getBusinessProcess() + "/";
     }
 }

@@ -29,7 +29,7 @@ public class ValidationService {
         String domain = header.getTo().getFIId().getFinInstnId().getNm();
 
         if (truststore != null && pwd != null) {
-            checkSSLCertificate("https://" + domain, truststore, pwd);
+            checkSSLCertificate("https://" + domain + ":8443", truststore, pwd);
 
         } else {
             throw new Exception("The truststore and password cannot be null.");
@@ -52,7 +52,7 @@ public class ValidationService {
         String domain = header.getFr().getFIId().getFinInstnId().getNm();
 
         if (truststorePath != null && pwd != null) {
-            checkSSLCertificate("https://" + domain, truststorePath, pwd);
+            checkSSLCertificate("https://" + domain + ":8443", truststorePath, pwd);
 
         } else {
             throw new Exception("The truststore and password cannot be null.");
