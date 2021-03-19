@@ -21,15 +21,16 @@ public class ValidationService {
      * for it to be valid.
      * 
      * @param header     the header
+     * @param port       the port of the domain name
      * @param truststore the truststore path
      * @param pwd        the password for the truststore
      * @throws Exception if the header is not valid
      */
-    public static void validateHeaderTo(BusinessAppHdrV02 header, String truststore, String pwd) throws Exception {
+    public static void validateHeaderTo(BusinessAppHdrV02 header, int port, String truststore, String pwd) throws Exception {
         String domain = header.getTo().getFIId().getFinInstnId().getNm();
 
         if (truststore != null && pwd != null) {
-            checkSSLCertificate("https://" + domain + ":8443", truststore, pwd);
+            checkSSLCertificate("https://" + domain + ":" + port, truststore, pwd);
 
         } else {
             throw new Exception("The truststore and password cannot be null.");
@@ -43,16 +44,17 @@ public class ValidationService {
      * it to be valid.
      * 
      * @param header         the header
+     * @param port           the port of the domain name
      * @param truststorePath the truststore path
      * @param pwd            the password for the truststore
      * @throws Exception if the header is not valid
      */
-    public static void validateHeaderFrom(BusinessAppHdrV02 header, String truststorePath, String pwd)
+    public static void validateHeaderFrom(BusinessAppHdrV02 header, int port, String truststorePath, String pwd)
             throws Exception {
         String domain = header.getFr().getFIId().getFinInstnId().getNm();
 
         if (truststorePath != null && pwd != null) {
-            checkSSLCertificate("https://" + domain + ":8443", truststorePath, pwd);
+            checkSSLCertificate("https://" + domain + ":" + port, truststorePath, pwd);
 
         } else {
             throw new Exception("The truststore and password cannot be null.");

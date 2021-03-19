@@ -33,7 +33,7 @@ public class HTTPSCustomTruststore {
      */
     public static void configureTruststore(HttpsURLConnection connection, String truststorePath, String pwd)
             throws Exception {
-        KeyStore keystore = KeyStore.getInstance("PKCS12");
+        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
 
         InputStream keystoreStream = HTTPSCustomTruststore.class.getClassLoader().getResourceAsStream(truststorePath);
         keystore.load(keystoreStream, pwd.toCharArray());
