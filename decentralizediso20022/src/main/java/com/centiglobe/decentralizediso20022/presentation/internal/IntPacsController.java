@@ -47,15 +47,6 @@ public class IntPacsController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IntPacsController.class);
 
-    @GetMapping(value = {"/008", "/008/{var}", "/008/{var}/{ver}"})
-    public Map<String, String> getPacs008(@PathVariable(required = false) String var,
-                             @PathVariable(required = false) String ver) {
-        String resp = "Get request for internal /pacs/008/" + var + "/" + ver;
-        throw new ResponseStatusException(HttpStatus.I_AM_A_TEAPOT, resp);
-        /*LOGGER.info(resp);
-        return Collections.singletonMap("response", resp);*/
-    }
-
     @PostMapping("/")
     public ResponseEntity handlePacs(@RequestBody String pacs) {
         LOGGER.info("Internal cotroller handling pacs message.");
@@ -73,9 +64,7 @@ public class IntPacsController {
         try {
             return msgService.send(mx);
         } catch (Exception e) {
-            e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not process the message.");
         }
-        //return ResponseEntity.status(resp.getStatus()).contentType(MediaType.APPLICATION_XML).body(resp.getBody());
     }
 }

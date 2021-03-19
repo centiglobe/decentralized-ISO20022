@@ -2,6 +2,7 @@ package com.centiglobe.decentralizediso20022.presentation.external;
 
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -45,19 +46,10 @@ public class ExtPacsController {
     @Value("${server.ssl.trust-store-password}")
     private String TRUST_PASS;
     
-    /*@Autowired
-    private ExtMessageService msgService;*/
+    @Autowired
+    private ExtMessageService msgService;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExtPacsController.class);
-
-    @GetMapping(value = {"/008", "/008/{var}", "/008/{var}/{ver}"})
-    public Map<String, String> getPacs008(@PathVariable(required = false) String var,
-                             @PathVariable(required = false) String ver) throws Exception {
-        String resp = "Get request for external /pacs/008/" + var + "/" + ver;
-        throw new Exception(resp);
-        /*LOGGER.debug(resp);
-        return Collections.singletonMap("response", resp);*/
-    }
 
     @PostMapping("/")
     public ResponseEntity handlePacs008(@RequestBody String pacs) throws UnsupportedEncodingException {
@@ -70,8 +62,10 @@ public class ExtPacsController {
         
         BusinessAppHdrV02 header = (BusinessAppHdrV02) mx.getAppHdr();
         try {
-            ValidationService.validateHeaderFrom(header, TRUST_STORE, TRUST_PASS);
-            ValidationService.validateHeaderTo(header, TRUST_STORE, TRUST_PASS);
+            // Extract path relative to the classpath
+            String truststore = new File(TRUST_STORE).getName();
+            ValidationService.validateHeaderFrom(header, truststore, TRUST_PASS);
+            ValidationService.validateHeaderTo(header, truststore, TRUST_PASS);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The entity had an invalid from or to header.");
         }
