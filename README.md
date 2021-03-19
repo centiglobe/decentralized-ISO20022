@@ -26,7 +26,7 @@ The following instructions describe how to set up the system.
   3. In Postman, click "body" and select "raw".
   4. Copy the contents of `examples/messages/pacs00800109/example1WithHeader.xml`
      and paste it into the textbox in Postman.
-  5. Select the "POST" method, enter the URL `localhost:8080/refdata/v1/pacs` and
+  5. Select the "POST" method, enter the URL `localhost:8080/api/v1/pacs/` and
      click "Send".
   6. If successfull, you should see a message in the external service's command
      prompt window that shows the pacs.008 message that "was sent to the bank".
