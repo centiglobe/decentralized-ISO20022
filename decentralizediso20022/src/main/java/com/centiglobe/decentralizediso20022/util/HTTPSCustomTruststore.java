@@ -33,7 +33,7 @@ public class HTTPSCustomTruststore {
      */
     public static void configureTruststore(HttpsURLConnection connection, String truststorePath, String pwd)
             throws Exception {
-        KeyStore keystore = KeyStore.getInstance("JKS");
+        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
 
         InputStream keystoreStream = HTTPSCustomTruststore.class.getClassLoader().getResourceAsStream(truststorePath);
         keystore.load(keystoreStream, pwd.toCharArray());
@@ -45,7 +45,8 @@ public class HTTPSCustomTruststore {
         CertPathBuilder cpb = CertPathBuilder.getInstance("PKIX");
         PKIXRevocationChecker rc = (PKIXRevocationChecker) cpb.getRevocationChecker();
         rc.setOptions(EnumSet.of(PKIXRevocationChecker.Option.PREFER_CRLS, // prefer CLR over OCSP
-                PKIXRevocationChecker.Option.ONLY_END_ENTITY, PKIXRevocationChecker.Option.NO_FALLBACK));
+                PKIXRevocationChecker.Option.SOFT_FAIL, PKIXRevocationChecker.Option.NO_FALLBACK));
+                // TODO: Remove SOFT_FAIL and change to ONLY_END_ENTITY
         // don't fall back to OCSP checking
 
         PKIXBuilderParameters pkixParams = new PKIXBuilderParameters(keystore, new X509CertSelector());
