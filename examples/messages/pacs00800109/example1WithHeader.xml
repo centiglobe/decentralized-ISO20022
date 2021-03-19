@@ -4,14 +4,14 @@
         <h:Fr>
             <h:FIId>
                 <h:FinInstnId>
-                    <h:Nm>bing.com</h:Nm>
+                    <h:Nm>localhost</h:Nm>
                 </h:FinInstnId>
             </h:FIId>
         </h:Fr>
         <h:To>
             <h:FIId>
                 <h:FinInstnId>
-                    <h:Nm>google.com</h:Nm>
+                    <h:Nm>localhost</h:Nm>
                 </h:FinInstnId>
             </h:FIId>
         </h:To>
