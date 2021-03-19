@@ -46,7 +46,7 @@ public class HTTPSCustomTruststore {
         PKIXRevocationChecker rc = (PKIXRevocationChecker) cpb.getRevocationChecker();
         rc.setOptions(EnumSet.of(PKIXRevocationChecker.Option.PREFER_CRLS, // prefer CLR over OCSP
                 PKIXRevocationChecker.Option.SOFT_FAIL, PKIXRevocationChecker.Option.NO_FALLBACK));
-                // TODO: Change to PKIXRevocationChecker.Option.ONLY_END_ENTITY
+                // TODO: Remove SOFT_FAIL and change to ONLY_END_ENTITY
         // don't fall back to OCSP checking
 
         PKIXBuilderParameters pkixParams = new PKIXBuilderParameters(keystore, new X509CertSelector());
