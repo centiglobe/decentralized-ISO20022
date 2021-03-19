@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<RequestPayload>
+    <h:AppHdr xmlns:h="urn:iso:std:iso:20022:tech:xsd:head.001.001.02">
+        <h:Fr>
+            <h:FIId>
+                <h:FinInstnId>
+                    <h:Nm>google.com</h:Nm>
+                </h:FinInstnId>
+            </h:FIId>
+        </h:Fr>
+        <h:To>
+            <h:FIId>
+                <h:FinInstnId>
+                    <h:Nm>bing.com</h:Nm>
+                </h:FinInstnId>
+            </h:FIId>
+        </h:To>
+        <h:BizMsgIdr>ABC1456456</h:BizMsgIdr>
+        <h:MsgDefIdr>pacs.002.001.11</h:MsgDefIdr>
+        <h:CreDt>2021-03-19T10:20:20.465+01:00</h:CreDt>
+    </h:AppHdr>
+    <Doc:Document xmlns:Doc="urn:iso:std:iso:20022:tech:xsd:pacs.002.001.11">
+        <Doc:FIToFIPmtStsRpt>
+            <Doc:GrpHdr>
+                <Doc:MsgId>ABC12345</Doc:MsgId>
+                <Doc:CreDtTm>2021-03-19T10:20:19.933+01:00</Doc:CreDtTm>
+            </Doc:GrpHdr>
+            <Doc:OrgnlGrpInfAndSts>
+                <Doc:OrgnlMsgId>TBEXO12345</Doc:OrgnlMsgId>
+                <Doc:OrgnlMsgNmId>pacs.008.001.09</Doc:OrgnlMsgNmId>
+            </Doc:OrgnlGrpInfAndSts>
+        </Doc:FIToFIPmtStsRpt>
+    </Doc:Document>
+</RequestPayload>

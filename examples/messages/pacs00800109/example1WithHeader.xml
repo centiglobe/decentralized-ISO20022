@@ -4,14 +4,14 @@
         <h:Fr>
             <h:FIId>
                 <h:FinInstnId>
-                    <h:BICFI>ABCDUS33XXX</h:BICFI>
+                    <h:Nm>bing.com</h:Nm>
                 </h:FinInstnId>
             </h:FIId>
         </h:Fr>
         <h:To>
             <h:FIId>
                 <h:FinInstnId>
-                    <h:BICFI>EFGHUS33XXX</h:BICFI>
+                    <h:Nm>google.com</h:Nm>
                 </h:FinInstnId>
             </h:FIId>
         </h:To>
