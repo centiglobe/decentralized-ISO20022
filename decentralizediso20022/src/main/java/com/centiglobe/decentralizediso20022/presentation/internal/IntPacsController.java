@@ -2,8 +2,6 @@ package com.centiglobe.decentralizediso20022.presentation.internal;
 
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-
 import com.centiglobe.decentralizediso20022.annotation.ApiVersion;
 import com.centiglobe.decentralizediso20022.application.ValidationService;
 import com.centiglobe.decentralizediso20022.application.internal.IntMessageService;
@@ -15,14 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -59,7 +55,13 @@ public class IntPacsController {
             int port = Integer.parseInt(PORT);
             vs.validateHeader(header, port);
         } catch (Throwable e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The entity had an invalid from or to header.");
+
+            // Note: Might want check for WebClientResponseException, instead of only
+            // NotFound.
+            if (!(e instanceof WebClientResponseException.NotFound)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "The entity had an invalid from or to header.");
+            }
         }
         try {
             return msgService.send(mx);

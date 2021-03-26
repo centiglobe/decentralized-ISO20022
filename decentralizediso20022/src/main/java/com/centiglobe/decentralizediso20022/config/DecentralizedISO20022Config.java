@@ -21,6 +21,7 @@ import reactor.netty.http.client.HttpClient;
 
 import static com.centiglobe.decentralizediso20022.util.HTTPSCustomTruststore.createTrustManager;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStoreException;
@@ -75,7 +76,10 @@ public class DecentralizedISO20022Config extends WebMvcConfigurationSupport {
     @Bean
     public ReactorClientHttpConnector getReactorClientConfig() throws KeyStoreException, NoSuchAlgorithmException,
             CertificateException, InvalidAlgorithmParameterException, IOException {
-        TrustManagerFactory tm = createTrustManager(TRUST_STORE, TRUST_PASS);
+        // extract the trust store path relative to the resource folder.
+        String truststore = new File(TRUST_STORE).getName();
+
+        TrustManagerFactory tm = createTrustManager(truststore, TRUST_PASS);
 
         SSLFactory sslFactory = SSLFactory.builder().withTrustMaterial(tm).build();
 
