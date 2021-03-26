@@ -36,17 +36,14 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("pacs")
 public class IntPacsController {
 
-    @Value("${server.ssl.trust-store}")
-    private String TRUST_STORE;
-
-    @Value("${server.ssl.trust-store-password}")
-    private String TRUST_PASS;
-
     @Value("${recipient.port}")
     private String PORT;
-    
+
     @Autowired
     private IntMessageService msgService;
+
+    @Autowired
+    private ValidationService vs;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IntPacsController.class);
 
@@ -56,13 +53,12 @@ public class IntPacsController {
         AbstractMX mx = AbstractMX.parse(pacs);
         if (mx == null || !mx.getBusinessProcess().equals("pacs"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The entity was not a valid pacs message.");
-        
+
         BusinessAppHdrV02 header = (BusinessAppHdrV02) mx.getAppHdr();
         try {
             int port = Integer.parseInt(PORT);
-            ValidationService.validateHeaderFrom(header, port, TRUST_STORE, TRUST_PASS);
-            ValidationService.validateHeaderTo(header, port, TRUST_STORE, TRUST_PASS);
-        } catch (Exception e) {
+            vs.validateHeader(header, port);
+        } catch (Throwable e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The entity had an invalid from or to header.");
         }
         try {

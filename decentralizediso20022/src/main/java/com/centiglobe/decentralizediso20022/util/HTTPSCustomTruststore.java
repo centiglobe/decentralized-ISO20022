@@ -1,8 +1,13 @@
 package com.centiglobe.decentralizediso20022.util;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertPathBuilder;
+import java.security.cert.CertificateException;
 import java.security.cert.PKIXBuilderParameters;
 import java.security.cert.PKIXRevocationChecker;
 import java.security.cert.X509CertSelector;
@@ -19,18 +24,51 @@ import javax.net.ssl.TrustManagerFactory;
  * 
  */
 public class HTTPSCustomTruststore {
-
-    // https://stackoverflow.com/a/38523104/13820107
     /**
-     * Configures a custom truststore. The default truststore can be used if
-     * <code>truststorePath</code> is null. The default truststore does not work
-     * well.
+     * Creates a trust manager and configures security rules. Parameters cannot be
+     * <code>NULL</code>.
      * 
-     * @param connection     the connection the truststore will used for
-     * @param truststorePath the truststore path
-     * @param pwd            the truststore password
-     * @throws Exception if any problems occur
+     * @param truststorePath the path to the truststore
+     * @param password       the password for the truststore
+     * @return The trust manger
+     * @throws KeyStoreException
+     * @throws IOException
+     * @throws CertificateException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidAlgorithmParameterException
      */
+    public static TrustManagerFactory createTrustManager(String truststorePath, String password)
+            throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException,
+            InvalidAlgorithmParameterException {
+        if (truststorePath == null || password == null) {
+            throw new KeyStoreException("Truststore and password cannot be NULL.");
+        }
+
+        // KeyStore keystore = KeyStore.getInstance("PKCS12");
+        KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+
+        InputStream keystoreStream = HTTPSCustomTruststore.class.getClassLoader().getResourceAsStream(truststorePath);
+        keystore.load(keystoreStream, password.toCharArray());
+
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+
+        // initialize certification path checking for the offered certificates and
+        // revocation checks against CLRs
+        CertPathBuilder cpb = CertPathBuilder.getInstance("PKIX");
+        PKIXRevocationChecker rc = (PKIXRevocationChecker) cpb.getRevocationChecker();
+        rc.setOptions(EnumSet.of(PKIXRevocationChecker.Option.PREFER_CRLS, // prefer CLR over OCSP
+                PKIXRevocationChecker.Option.SOFT_FAIL, PKIXRevocationChecker.Option.NO_FALLBACK));
+        // TODO: Remove SOFT_FAIL and change to ONLY_END_ENTITY
+        // and don't fall back to OCSP checking.
+
+        PKIXBuilderParameters pkixParams = new PKIXBuilderParameters(keystore, new X509CertSelector());
+        pkixParams.addCertPathChecker(rc);
+
+        tmf.init(new CertPathTrustManagerParameters(pkixParams));
+
+        return tmf;
+    }
+
     public static void configureTruststore(HttpsURLConnection connection, String truststorePath, String pwd)
             throws Exception {
         KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
@@ -46,7 +84,7 @@ public class HTTPSCustomTruststore {
         PKIXRevocationChecker rc = (PKIXRevocationChecker) cpb.getRevocationChecker();
         rc.setOptions(EnumSet.of(PKIXRevocationChecker.Option.PREFER_CRLS, // prefer CLR over OCSP
                 PKIXRevocationChecker.Option.SOFT_FAIL, PKIXRevocationChecker.Option.NO_FALLBACK));
-                // TODO: Remove SOFT_FAIL and change to ONLY_END_ENTITY
+        // TODO: Remove SOFT_FAIL and change to ONLY_END_ENTITY
         // don't fall back to OCSP checking
 
         PKIXBuilderParameters pkixParams = new PKIXBuilderParameters(keystore, new X509CertSelector());

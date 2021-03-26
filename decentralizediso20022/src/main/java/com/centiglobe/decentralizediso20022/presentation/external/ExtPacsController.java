@@ -40,17 +40,14 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("pacs")
 public class ExtPacsController {
 
-    @Value("${server.ssl.trust-store}")
-    private String TRUST_STORE;
-
-    @Value("${server.ssl.trust-store-password}")
-    private String TRUST_PASS;
-
     @Value("${recipient.port}")
     private String PORT;
-    
+
     @Autowired
     private ExtMessageService msgService;
+
+    @Autowired
+    private ValidationService vs;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExtPacsController.class);
 
@@ -62,15 +59,12 @@ public class ExtPacsController {
         AbstractMX mx = AbstractMX.parse(decodedPacs);
         if (mx == null || !mx.getBusinessProcess().equals("pacs"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The entity was not a valid pacs message.");
-        
+
         BusinessAppHdrV02 header = (BusinessAppHdrV02) mx.getAppHdr();
         try {
-            // Extract path relative to the classpath
-            String truststore = new File(TRUST_STORE).getName();
             int port = Integer.parseInt(PORT);
-            ValidationService.validateHeaderFrom(header, port, truststore, TRUST_PASS);
-            ValidationService.validateHeaderTo(header, port, truststore, TRUST_PASS);
-        } catch (Exception e) {
+            vs.validateHeader(header, port);
+        } catch (Throwable e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The entity had an invalid from or to header.");
         }
         try {
