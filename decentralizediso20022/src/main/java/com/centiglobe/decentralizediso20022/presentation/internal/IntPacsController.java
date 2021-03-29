@@ -55,10 +55,8 @@ public class IntPacsController {
             int port = Integer.parseInt(PORT);
             vs.validateHeader(header, port);
         } catch (Throwable e) {
-
-            // Note: Might want check for WebClientResponseException, instead of only
-            // NotFound.
-            if (!(e instanceof WebClientResponseException.NotFound)) {
+            // TODO: Research if only WebClientResponseException needs to be ignored.
+            if (!(e instanceof WebClientResponseException)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "The entity had an invalid from or to header.");
             }
