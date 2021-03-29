@@ -44,7 +44,6 @@ public class HTTPSCustomTruststore {
             throw new KeyStoreException("Truststore and password cannot be NULL.");
         }
 
-        // KeyStore keystore = KeyStore.getInstance("PKCS12");
         KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
 
         InputStream keystoreStream = HTTPSCustomTruststore.class.getClassLoader().getResourceAsStream(truststorePath);
@@ -69,6 +68,16 @@ public class HTTPSCustomTruststore {
         return tmf;
     }
 
+    /**
+     * 
+     * This should be removed once IntMessageService.java has been ported to using
+     * <code>WebClient</code>
+     * 
+     * @param connection     the https connection
+     * @param truststorePath the path to the truststore
+     * @param pwd            the password
+     * @throws Exception if a problem occurs
+     */
     public static void configureTruststore(HttpsURLConnection connection, String truststorePath, String pwd)
             throws Exception {
         KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
