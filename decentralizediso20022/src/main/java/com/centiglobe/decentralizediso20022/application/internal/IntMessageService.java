@@ -39,9 +39,6 @@ public class IntMessageService {
     @Value("${server.ssl.trust-store-password}")
     private String TRUST_PASS;
 
-    @Value("${recipient.port}")
-    private String PORT;
-
     /**
      * Sends an ISO 20022 message using HTTPS to its dedicated endpoint at the recipent host
      * 
@@ -53,7 +50,7 @@ public class IntMessageService {
         String host = ((BusinessAppHdrV02)mx.getAppHdr()).getTo().getFIId().getFinInstnId().getNm();
         byte[] encoded = mx.message().getBytes("utf-8");
 
-        URL url = new URL("https://" + host + ":" + PORT + endpointOf(mx));
+        URL url = new URL("https://" + host + endpointOf(mx));
 
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
         conn.setRequestMethod("POST");

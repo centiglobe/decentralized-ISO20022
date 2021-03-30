@@ -36,8 +36,17 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("pacs")
 public class ExtPacsController {
 
-    @Value("${recipient.port}")
-    private String PORT;
+    @Value("${message.bad-pacs}")
+    private String BAD_PACS;
+
+    @Value("${message.bad-header}")
+    private String BAD_HEADER;
+
+    @Value("${message.500}")
+    private String INTERNAL_ERROR;
+
+    @Value("${message.200}")
+    private String OK;
 
     @Autowired
     private ExtMessageService msgService;
@@ -54,25 +63,23 @@ public class ExtPacsController {
 
         AbstractMX mx = AbstractMX.parse(decodedPacs);
         if (mx == null || !mx.getBusinessProcess().equals("pacs"))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The entity was not a valid pacs message.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, BAD_PACS);
 
         BusinessAppHdrV02 header = (BusinessAppHdrV02) mx.getAppHdr();
         try {
-            int port = Integer.parseInt(PORT);
-            vs.validateHeader(header, port);
+            vs.validateHeader(header);
         } catch (Throwable e) {
             // TODO: Research if only WebClientResponseException needs to be ignored.
             if (!(e instanceof WebClientResponseException)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "The entity had an invalid from or to header.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, BAD_HEADER);
             }
         }
         try {
             msgService.send(mx);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not process the message.");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_ERROR);
         }
         // TODO: Respond with the response from the bank service
-        throw new ResponseStatusException(HttpStatus.OK, "The message was processed.");
+        throw new ResponseStatusException(HttpStatus.OK, OK);
     }
 }
