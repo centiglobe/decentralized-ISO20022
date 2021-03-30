@@ -22,6 +22,7 @@ import javax.net.ssl.TrustManagerFactory;
 /**
  * A utility class for configuring a the truststore for a HTTPS connection.
  * 
+ * @author Cactu5
  */
 public class HTTPSCustomTruststore {
     /**
@@ -31,11 +32,14 @@ public class HTTPSCustomTruststore {
      * @param truststorePath the path to the truststore
      * @param password       the password for the truststore
      * @return The trust manger
-     * @throws KeyStoreException
-     * @throws IOException
-     * @throws CertificateException
-     * @throws NoSuchAlgorithmException
-     * @throws InvalidAlgorithmParameterException
+     * @throws KeyStoreException                  if there is a problem with the
+     *                                            keystore
+     * @throws IOException                        if there is an problem reading the
+     *                                            keystore
+     * @throws CertificateException               if there is a problem with any
+     *                                            certificate
+     * @throws NoSuchAlgorithmException           if the algorithm does not exist
+     * @throws InvalidAlgorithmParameterException if the algorithm is invalid
      */
     public static TrustManagerFactory createTrustManager(String truststorePath, String password)
             throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException,
