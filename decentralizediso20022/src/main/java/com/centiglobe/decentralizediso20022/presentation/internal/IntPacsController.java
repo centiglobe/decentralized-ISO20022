@@ -45,16 +45,17 @@ public class IntPacsController {
     private static final Logger LOGGER = LoggerFactory.getLogger(IntPacsController.class);
 
     /**
-     * TODO: Change ResponseEntity <code>String</code> to an appropriate class.
+     * Validates an incomming pacs message before sending it to the recipient
+     * financial institution
      * 
-     * @param pacs
-     * @return
+     * @param pacs The pacs message to validate and send
+     * @return The HTTP response of the sent pacs message
      */
     @PostMapping("")
     public ResponseEntity<String> handlePacs(@RequestBody String pacs) {
         LOGGER.info("Internal cotroller handling pacs message.");
         AbstractMX mx = AbstractMX.parse(pacs);
-        if (mx == null || !mx.getBusinessProcess().equals("pacs"))
+        if (mx == null || !mx.getBusinessProcess().equals("pacs") || mx.getAppHdr() == null)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The entity was not a valid pacs message.");
 
         BusinessAppHdrV02 header = (BusinessAppHdrV02) mx.getAppHdr();

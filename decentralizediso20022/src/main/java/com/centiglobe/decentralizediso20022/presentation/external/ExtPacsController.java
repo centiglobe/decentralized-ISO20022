@@ -47,15 +47,22 @@ public class ExtPacsController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExtPacsController.class);
 
+    /**
+     * Validates an incomming pacs message before sending it to the internal
+     * financial institution system
+     * 
+     * @param pacs The pacs message to validate and send
+     * @return The HTTP response of the sent pacs message
+     */
     @PostMapping("")
-    public ResponseEntity handlePacs008(@RequestBody String pacs) throws UnsupportedEncodingException {
+    public ResponseEntity<String> handlePacs(@RequestBody String pacs) throws UnsupportedEncodingException {
         LOGGER.info("External cotroller handling pacs message");
         String decodedPacs = URLDecoder.decode(pacs, StandardCharsets.UTF_8.name());
 
         AbstractMX mx = AbstractMX.parse(decodedPacs);
-        if (mx == null || !mx.getBusinessProcess().equals("pacs"))
+        if (mx == null || !mx.getBusinessProcess().equals("pacs") || mx.getAppHdr() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The entity was not a valid pacs message.");
-
+        }
         BusinessAppHdrV02 header = (BusinessAppHdrV02) mx.getAppHdr();
         try {
             int port = Integer.parseInt(PORT);
@@ -67,13 +74,10 @@ public class ExtPacsController {
                         "The entity had an invalid from or to header.");
             }
         }
-
-        // TODO: might be problem below when migrating to webclient.
         try {
-
             msgService.send(mx);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not process the message.");
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Could not process the message.");
         }
         // TODO: Respond with the response from the bank service
         throw new ResponseStatusException(HttpStatus.OK, "The message was processed.");

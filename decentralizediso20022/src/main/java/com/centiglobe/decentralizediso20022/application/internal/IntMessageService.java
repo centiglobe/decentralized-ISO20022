@@ -13,26 +13,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
 
 import com.prowidesoftware.swift.model.mx.BusinessAppHdrV02;
 
-import static com.centiglobe.decentralizediso20022.util.HTTPSCustomTruststore.configureTruststore;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
-import java.net.URL;
-import java.util.List;
-import java.util.Map;
-
-import javax.net.ssl.HttpsURLConnection;
 
 /**
  * A service for sending messages
@@ -64,68 +52,37 @@ public class IntMessageService {
 
     /**
      * Sends an ISO 20022 message using HTTPS to its dedicated endpoint at the
-     * recipent host
+     * recipent host and returns the response returned, regardless of its status
      * 
      * @param mx The ISO 20022 message to send
      * @return The HTTP response sent by the recipent host
      * @throws Exception If sending the message failed
      */
-    // TODO: Change ResponseEntity <code>String</code> to an appropriate class.
-    public ResponseEntity<String> send(AbstractMX mx) throws Exception {
-        String host = ((BusinessAppHdrV02) mx.getAppHdr()).getTo().getFIId().getFinInstnId().getNm();
-        // byte[] encoded = mx.message().getBytes("utf-8");
-
+    public ResponseEntity<String> send(AbstractMX mx) throws Throwable {
+        String host;
+        try {
+            host = ((BusinessAppHdrV02) mx.getAppHdr()).getTo().getFIId().getFinInstnId().getNm();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to retrieve the recipient from the message.");
+        }
         URI uri = new URI("https://" + host + ":" + PORT + endpointOf(mx));
 
-        // TODO: unwrap and throw errors from the request!!!
-        System.out.println("--------------IntMessageService---------------");
-        System.out.println("Sending Request!");
-        System.out.println("--------------IntMessageService---------------");
-        ResponseEntity<String> test = webClientBuilder
+        try {
+            return webClientBuilder
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE).build().post().uri(uri)
-                .bodyValue(mx).retrieve().onStatus(HttpStatus::isError, (it -> {
-                    System.out.println("--------------IntMessageService---------------");
-                    System.out.println("Status code:");
-                    System.out.println(it.statusCode());
-                    System.out.println("--------------IntMessageService---------------");
-                    return Mono.error(Exception::new);
+                .bodyValue(mx.message()).retrieve().onStatus(HttpStatus::isError, (it -> {
+                    if (it.statusCode().is4xxClientError()) {
+                        // If the response is a 4xx error, it means the internal component mistakenly
+                        // validated the message. (Or the external component mistakenly flagged it)
+                        LOGGER.error("Received a " + it.statusCode() + " status from the recipent.");
+                    } else {
+                        LOGGER.debug("Received a " + it.statusCode() + " status from the recipent.");
+                    }
+                    return Mono.empty();
                 })).toEntity(String.class).block();
-        System.out.println("--------------IntMessageService---------------");
-        System.out.println(test.toString());
-        System.out.println("--------------IntMessageService---------------");
-        return test;
-
-        // HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-        // conn.setRequestMethod("POST");
-        // configureTruststore(conn, TRUST_STORE, TRUST_PASS);
-        // conn.setDoOutput(true);
-        // conn.setRequestProperty("Content-Length", "" + encoded.length);
-        // conn.getOutputStream().write(encoded);
-
-        // return getHttpsResponse(conn);
-    }
-
-    private ResponseEntity getHttpsResponse(HttpsURLConnection con) throws IOException {
-        InputStream reader = hasErrorResponse(con) ? con.getErrorStream() : con.getInputStream();
-        BufferedReader in = new BufferedReader(new InputStreamReader(reader, "utf-8"));
-        StringBuilder respReader = new StringBuilder();
-        String row;
-        while ((row = in.readLine()) != null) {
-            respReader.append(row + "\n");
+        } catch (Exception e) {
+            throw Exceptions.unwrap(e);
         }
-        HttpHeaders headers = new HttpHeaders();
-        Map<String, List<String>> conHeaders = con.getHeaderFields();
-        for (String header : conHeaders.keySet()) {
-            if (header != null) {
-                headers.add(header, conHeaders.get(header).get(0));
-            }
-        }
-        String body = respReader.toString();
-        return ResponseEntity.status(con.getResponseCode()).headers(headers).body(body);
-    }
-
-    private boolean hasErrorResponse(HttpsURLConnection con) throws IOException {
-        return con.getResponseCode() > 299;
     }
 
     private String endpointOf(AbstractMX mx) {

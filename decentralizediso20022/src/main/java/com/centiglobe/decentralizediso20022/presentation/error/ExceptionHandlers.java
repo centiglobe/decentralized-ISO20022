@@ -41,7 +41,7 @@ public class ExceptionHandlers implements ErrorController {
      * @return A generic error response
      */
     @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity handleResponseStatusException(ResponseStatusException e) {
+    public ResponseEntity<String> handleResponseStatusException(ResponseStatusException e) {
         LOGGER.debug(e.getMessage(), e);
         return generateResponse(e.getStatus(), e.getReason());
     }
@@ -53,7 +53,7 @@ public class ExceptionHandlers implements ErrorController {
      * @return A generic error response
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity handleException(Exception e) {
+    public ResponseEntity<String> handleException(Exception e) {
         LOGGER.error(e.getMessage(), e);
         return generateResponse(HttpStatus.INTERNAL_SERVER_ERROR, null);
     }
@@ -65,7 +65,7 @@ public class ExceptionHandlers implements ErrorController {
      * @return An error response
      */
     @RequestMapping(ERR_PATH)
-    public ResponseEntity handleError(HttpServletRequest request) {
+    public ResponseEntity<String> handleError(HttpServletRequest request) {
         Object statusAttr = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
 
         // If there was no status attribute, default to 404
@@ -75,7 +75,7 @@ public class ExceptionHandlers implements ErrorController {
         return generateResponse(HttpStatus.valueOf(status), null);
     }
 
-    private ResponseEntity generateResponse(HttpStatus status, String message) {
+    private ResponseEntity<String> generateResponse(HttpStatus status, String message) {
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder;
         try {
