@@ -67,7 +67,10 @@ public class ExtPacsController {
                         "The entity had an invalid from or to header.");
             }
         }
+
+        // TODO: might be problem below when migrating to webclient.
         try {
+
             msgService.send(mx);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not process the message.");

@@ -25,6 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
  * A controller for handling internal pacs messages
  * 
  * @author William Stackenäs
+ * @author Cactu5
  */
 @RestController
 @Profile("internal")
@@ -43,8 +44,14 @@ public class IntPacsController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IntPacsController.class);
 
+    /**
+     * TODO: Change ResponseEntity <code>String</code> to an appropriate class.
+     * 
+     * @param pacs
+     * @return
+     */
     @PostMapping("")
-    public ResponseEntity handlePacs(@RequestBody String pacs) {
+    public ResponseEntity<String> handlePacs(@RequestBody String pacs) {
         LOGGER.info("Internal cotroller handling pacs message.");
         AbstractMX mx = AbstractMX.parse(pacs);
         if (mx == null || !mx.getBusinessProcess().equals("pacs"))
