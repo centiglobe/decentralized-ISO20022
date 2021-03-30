@@ -42,7 +42,7 @@ public class SendPacs008Tests {
     @Test
     void sendPacsTest() throws IOException, InterruptedException {
         byte[] encoded = mx.getBytes("utf-8");
-        URL url = new URL("http://localhost:8080/api/v1/pacs/");
+        URL url = new URL("http://localhost:8080/api/v1/pacs");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
         conn.setDoOutput(true);
