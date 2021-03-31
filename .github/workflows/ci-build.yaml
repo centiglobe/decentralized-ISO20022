@@ -22,8 +22,6 @@ jobs:
       run: |
         git fetch origin
         git checkout ${{ github.head_ref }}
-        ls
-        cd decentralizediso20022
-        ls
     - name: Build with Maven
+      working-directory: ./decentralizediso20022
       run: mvn -B test
