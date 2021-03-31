@@ -60,12 +60,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>
 		</dependency>
-
-		<dependency>
-			<groupId>io.github.hakky54</groupId>
-			<artifactId>sslcontext-kickstart-for-netty</artifactId>
-			<version>6.5.0</version>
-		</dependency>
 	</dependencies>
 
 	<build>
