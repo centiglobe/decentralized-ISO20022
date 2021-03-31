@@ -86,6 +86,6 @@ public class IntMessageService {
     }
 
     private String endpointOf(AbstractMX mx) {
-        return CONTEXT_PATH + "/v1/" + mx.getBusinessProcess() + "/";
+        return CONTEXT_PATH + "/v1/" + mx.getBusinessProcess();
     }
 }

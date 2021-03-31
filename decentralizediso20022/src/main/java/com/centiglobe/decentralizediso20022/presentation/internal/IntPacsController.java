@@ -71,7 +71,7 @@ public class IntPacsController {
         }
         try {
             return msgService.send(mx);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not process the message.");
         }
     }
