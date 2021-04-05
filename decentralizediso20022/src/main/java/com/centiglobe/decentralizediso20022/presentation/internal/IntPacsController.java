@@ -52,7 +52,7 @@ public class IntPacsController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IntPacsController.class);
 
-    @PostMapping("/")
+    @PostMapping("")
     public ResponseEntity handlePacs(@RequestBody String pacs) {
         LOGGER.info("Internal cotroller handling pacs message.");
         AbstractMX mx = AbstractMX.parse(pacs);

@@ -56,7 +56,7 @@ public class ExtPacsController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExtPacsController.class);
 
-    @PostMapping("/")
+    @PostMapping("")
     public ResponseEntity handlePacs008(@RequestBody String pacs) throws UnsupportedEncodingException {
         LOGGER.info("External cotroller handling pacs message");
         String decodedPacs = URLDecoder.decode(pacs, StandardCharsets.UTF_8.name());

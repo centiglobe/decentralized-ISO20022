@@ -78,7 +78,8 @@ public class SendPacs008Tests {
 
     @Test
     void sendInvalidToTest() throws IOException, InterruptedException {
-        validateResponse(sendPost(String.format(mx, "localhost", "self-signed.badssl.com")), HttpStatus.BAD_REQUEST, BAD_HEADER);
+        validateResponse(sendPost(String.format(mx, "localhost", "self-signed.badssl.com")), HttpStatus.BAD_REQUEST,
+                BAD_HEADER);
     }
 
     @Test
@@ -88,7 +89,9 @@ public class SendPacs008Tests {
 
     @Test
     void sendToBadEndpointTest() throws IOException, InterruptedException {
-        validateResponse(sendPost(String.format(mx, "localhost", "localhost"), new URL("http://localhost:8080/api/v1/fdsfsf/")), HttpStatus.NOT_FOUND);
+        validateResponse(
+                sendPost(String.format(mx, "localhost", "localhost"), new URL("http://localhost:8080/api/v1/fdsfsf/")),
+                HttpStatus.NOT_FOUND);
     }
 
     private void validateResponse(ResponseEntity resp, HttpStatus expectedStatus) {
