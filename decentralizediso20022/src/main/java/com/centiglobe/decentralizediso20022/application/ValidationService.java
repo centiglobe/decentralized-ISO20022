@@ -44,12 +44,11 @@ public class ValidationService {
      * truststore for it to be valid.
      * 
      * @param header the header
-     * @param port   the port of the domain name
      * @throws Throwable if anything goes wrong
      */
-    public void validateHeader(BusinessAppHdrV02 header, int port) throws Throwable {
-        validateHeaderTo(header, port);
-        validateHeaderFrom(header, port);
+    public void validateHeader(BusinessAppHdrV02 header) throws Throwable {
+        validateHeaderTo(header);
+        validateHeaderFrom(header);
     }
 
     /**
@@ -58,13 +57,12 @@ public class ValidationService {
      * for it to be valid.
      * 
      * @param header the header
-     * @param port   the port of the domain name
      * @throws Throwable
      */
-    public void validateHeaderTo(BusinessAppHdrV02 header, int port) throws Throwable {
+    public void validateHeaderTo(BusinessAppHdrV02 header) throws Throwable {
         String domain = header.getTo().getFIId().getFinInstnId().getNm();
 
-        checkCertificate("https://" + domain + ":" + port);
+        checkCertificate("https://" + domain);
     }
 
     /**
@@ -73,12 +71,11 @@ public class ValidationService {
      * it to be valid.
      * 
      * @param header the header
-     * @param port   the port of the domain name
      * @throws Throwable
      */
-    public void validateHeaderFrom(BusinessAppHdrV02 header, int port) throws Throwable {
+    public void validateHeaderFrom(BusinessAppHdrV02 header) throws Throwable {
         String domain = header.getFr().getFIId().getFinInstnId().getNm();
 
-        checkCertificate("https://" + domain + ":" + port);
+        checkCertificate("https://" + domain);
     }
 }
