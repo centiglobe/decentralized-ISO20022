@@ -47,9 +47,6 @@ public class IntMessageService {
     @Qualifier("secureWebClient")
     public WebClient.Builder webClientBuilder;
 
-    @Value("${recipient.port}")
-    private String PORT;
-
     /**
      * Sends an ISO 20022 message using HTTPS to its dedicated endpoint at the
      * recipent host and returns the response returned, regardless of its status
@@ -65,7 +62,7 @@ public class IntMessageService {
         } catch (Exception e) {
             throw new IllegalArgumentException("Failed to retrieve the recipient from the message.");
         }
-        URI uri = new URI("https://" + host + ":" + PORT + endpointOf(mx));
+        URI uri = new URI("https://" + host + endpointOf(mx));
 
         try {
             return webClientBuilder

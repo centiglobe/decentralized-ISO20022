@@ -21,15 +21,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.ResponseStatusException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Controller;
 
 @Controller
 @ControllerAdvice
 public class ExceptionHandlers implements ErrorController {
+
+    @Value("${message.empty}")
+    private String EMPTY_MSG;
 
     private static final String ERR_PATH = "/error";
     private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionHandlers.class);
@@ -44,6 +49,20 @@ public class ExceptionHandlers implements ErrorController {
     public ResponseEntity<String> handleResponseStatusException(ResponseStatusException e) {
         LOGGER.debug(e.getMessage(), e);
         return generateResponse(e.getStatus(), e.getReason());
+    }
+
+    /**
+     * An exception handler for {@link HttpMessageNotReadableException}s
+     * It is thrown when the POST body of the HTTP message is empty, in which
+     * case the server should respond with a bad request status
+     * 
+     * @param e The {@link ResponseStatusException} that was thrown
+     * @return A generic error response
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        LOGGER.debug(e.getMessage(), e);
+        return generateResponse(HttpStatus.BAD_REQUEST, EMPTY_MSG);
     }
 
     /**
