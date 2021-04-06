@@ -2,9 +2,6 @@ package com.centiglobe.decentralizediso20022.application.internal;
 
 import java.io.File;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchProviderException;
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
 import javax.annotation.PostConstruct;
@@ -18,7 +15,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 /**
- * A Validation service used for validating ISO 20022 messages.
+ * A Validation service used for validating outgoing ISO 20022 messages.
  * 
  * @author Cactu5
  * @author William
@@ -73,7 +70,7 @@ public class IntValidationService {
      * of the local certificate. May optionally also validate the To element against a
      * given certificate's common name.
      * 
-     * @param header the header to validate
+     * @param header The header to validate
      * @param cert The optional certificate to validate the To element against
      * @throws NullPointerException if the given message is null or lacks fields
      * @throws IllegalArgumentException if the given message is not valid

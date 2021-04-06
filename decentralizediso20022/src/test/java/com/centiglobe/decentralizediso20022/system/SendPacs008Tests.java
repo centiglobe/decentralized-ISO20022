@@ -1,7 +1,6 @@
 package com.centiglobe.decentralizediso20022.system;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -161,12 +160,32 @@ public class SendPacs008Tests {
 
     @Test
     void sendToExternalAuthenticated() throws Exception {
-            validateResponse(
-                sendPost(String.format(mx, "localhost", "localhost"), new URL("https://localhost:443/api/v1/pacs"), true, true),
-                HttpStatus.OK,
-                OK
-            );
+        validateResponse(
+            sendPost(String.format(mx, "localhost", "localhost"), new URL("https://localhost:443/api/v1/pacs"), true, true),
+            HttpStatus.OK,
+            OK
+        );
     }
+
+    @Test
+    void sendToExternalBadTo() throws Exception {
+        validateResponse(
+            sendPost(String.format(mx, "localhost", "self-signed.badssl.com"), new URL("https://localhost:443/api/v1/pacs"), true, true),
+            HttpStatus.BAD_REQUEST,
+            String.format(BAD_TO_HEADER, "self-signed.badssl.com", "localhost")
+        );
+    }
+
+    @Test
+    void sendToExternalBadFrom() throws Exception {
+        validateResponse(
+            sendPost(String.format(mx, "self-signed.badssl.com", "localhost"), new URL("https://localhost:443/api/v1/pacs"), true, true),
+            HttpStatus.BAD_REQUEST,
+            String.format(BAD_FROM_HEADER, "self-signed.badssl.com", "localhost")
+        );
+    }
+
+    // TODO: Is it possible to test the BAD_RECIPIENT error or the BAD_INTERNAL_CERT error?
 
     private void validateResponse(ResponseEntity<String> resp, HttpStatus expectedStatus) {
         validateResponse(resp, expectedStatus, null);
@@ -210,6 +229,9 @@ public class SendPacs008Tests {
         return getHttpResponse(conn);
     }
 
+    /**
+     * Doesn't parse the response 100% correctly, but it gets the job done for these tests
+     */
     private ResponseEntity<String> getHttpResponse(HttpURLConnection con) throws IOException {
         InputStream reader = hasErrorResponse(con) ? con.getErrorStream() : con.getInputStream();
         BufferedReader in = new BufferedReader(new InputStreamReader(reader, "utf-8"));

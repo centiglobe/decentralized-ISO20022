@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 /**
- * A Validation service used for validating ISO 20022 messages
+ * A Validation service used for validating incomming ISO 20022 messages
  * 
  * @author Cactu5
  * @author William
@@ -53,7 +53,7 @@ public class ExtValidationService {
     }
 
     /**
-     * Validates the ISO 20022 message. May optionally validate the message against
+     * Validates the ISO 20022 message. Also validates the message against
      * a given certificate
      * 
      * @param mx The message to validate
@@ -70,9 +70,9 @@ public class ExtValidationService {
     /**
      * Validates that the domain nested in the To element is equal to the common name
      * of the local certificate. Also validates the From element against a
-     * given certificate's common name.
+     * given certificate's common name
      * 
-     * @param header the header to validate
+     * @param header The header to validate
      * @param cert The certificate to validate the From element against
      * @throws NullPointerException if the given message is null or lacks fields
      * @throws IllegalArgumentException if the given message is not valid

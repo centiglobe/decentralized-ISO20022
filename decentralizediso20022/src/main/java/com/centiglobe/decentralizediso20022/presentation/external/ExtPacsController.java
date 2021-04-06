@@ -2,9 +2,6 @@ package com.centiglobe.decentralizediso20022.presentation.external;
 
 import org.slf4j.LoggerFactory;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.SSLException;
@@ -60,7 +57,6 @@ public class ExtPacsController {
      */
     @PostMapping("")
     public ResponseEntity<String> handlePacs(HttpServletRequest req, @RequestBody String pacs) throws SSLException {
-        String decodedPacs;
         MxPacs00800109 mxPacs;
         X509Certificate[] certs = (X509Certificate[]) req.getAttribute("javax.servlet.request.X509Certificate");
         if (certs == null || certs.length < 1) {
@@ -68,17 +64,9 @@ public class ExtPacsController {
             // from the handshake as an attribute
             throw new SSLException("The TLS certificate from the handshake was unavailable.");
         }
-
         LOGGER.info("External cotroller handling pacs message with cert " + certs[0].getSubjectX500Principal());
-        /*try {
-            decodedPacs = URLDecoder.decode(pacs, StandardCharsets.UTF_8.name());
-        } catch (Exception e) {
-            LOGGER.debug("The message had an unsupported encoding.");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, BAD_PACS);
-        }*/
-        decodedPacs = pacs;
 
-        mxPacs = MxPacs00800109.parse(decodedPacs);
+        mxPacs = MxPacs00800109.parse(pacs);
         try {
             return msgService.send(mxPacs, certs[0]);
         } catch (NullPointerException e) {

@@ -18,6 +18,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Controller;
 
+/**
+ * Handler methods for various uncaught exceptions
+ * 
+ * @author William Stackenäs
+ */
 @Controller
 @ControllerAdvice
 public class ExceptionHandlers implements ErrorController {
@@ -32,7 +37,7 @@ public class ExceptionHandlers implements ErrorController {
      * An exception handler for {@link ResponseStatusException}s
      * 
      * @param e The {@link ResponseStatusException} that was thrown
-     * @return A generic error response
+     * @return An error response based on the HTTP status of the exception
      */
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<String> handleResponseStatusException(ResponseStatusException e) {

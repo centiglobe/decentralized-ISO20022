@@ -63,8 +63,9 @@ public class IntMessageService {
      * 
      * @throws NullPointerException if the given message is null or lacks fields
      * @throws IllegalArgumentException if the given message is not valid
-     * @throws SSLHandshakeException if a secure TLS session could not be established with the recipient
-     * @throws Throwable If sending the message failed
+     * @throws WebClientRequestException if, for example, a secure TLS session could not be
+     *                                   established with the recipient
+     * @throws Throwable if sending the message failed
      */
     public ResponseEntity<String> send(AbstractMX mx) throws Throwable {
         vs.validateMessage(mx, null);
@@ -73,13 +74,13 @@ public class IntMessageService {
         try {
             return webClientBuilder
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE).build().post().uri(uri)
-                .bodyValue(mx.message()).retrieve().onStatus(HttpStatus::isError, (it -> {
-                    if (it.statusCode().is4xxClientError()) {
+                .bodyValue(mx.message()).retrieve().onStatus(HttpStatus::isError, (resp -> {
+                    if (resp.statusCode().is4xxClientError()) {
                         // If the response is a 4xx error, it means the internal component mistakenly
                         // validated the message. (Or the external component mistakenly flagged it)
-                        LOGGER.error("Received a " + it.statusCode() + " status from the recipent.");
+                        LOGGER.error("Received a " + resp.statusCode() + " status from the recipent.");
                     } else {
-                        LOGGER.debug("Received a " + it.statusCode() + " status from the recipent.");
+                        LOGGER.debug("Received a " + resp.statusCode() + " status from the recipent.");
                     }
                     return Mono.empty();
                 })).toEntity(String.class).block();
