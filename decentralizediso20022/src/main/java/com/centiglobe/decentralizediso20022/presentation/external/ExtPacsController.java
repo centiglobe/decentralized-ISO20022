@@ -84,7 +84,7 @@ public class ExtPacsController {
         try {
             msgService.send(mx);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_ERROR);
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, INTERNAL_ERROR);
         }
         // TODO: Respond with the response from the bank service
         throw new ResponseStatusException(HttpStatus.OK, OK);
