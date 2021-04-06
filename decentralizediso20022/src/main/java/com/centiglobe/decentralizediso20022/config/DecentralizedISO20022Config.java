@@ -19,8 +19,6 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
-import nl.altindag.ssl.SSLFactory;
-import nl.altindag.ssl.util.NettySslUtils;
 import reactor.netty.http.client.HttpClient;
 
 import java.io.File;
