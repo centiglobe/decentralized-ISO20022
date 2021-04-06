@@ -21,6 +21,7 @@ import reactor.core.publisher.Mono;
 import com.prowidesoftware.swift.model.mx.BusinessAppHdrV02;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * A service for sending messages
@@ -43,27 +44,32 @@ public class IntMessageService {
     @Value("${server.ssl.trust-store-password}")
     private String TRUST_PASS;
 
+    @Value("${message.bad-recipient}")
+    private String BAD_RECIPIENT;
+
     @Autowired
     @Qualifier("secureWebClient")
     public WebClient.Builder webClientBuilder;
 
+    @Autowired
+    private IntValidationService vs;
+
     /**
-     * Sends an ISO 20022 message using HTTPS to its dedicated endpoint at the
+     * Sends an ISO 20022 message, if it is valid, using HTTPS to its dedicated endpoint at the
      * recipent host and returns the response returned, regardless of its status
      * 
      * @param mx The ISO 20022 message to send
      * @return The HTTP response sent by the recipent host
-     * @throws Exception If sending the message failed
+     * 
+     * @throws NullPointerException if the given message is null or lacks fields
+     * @throws IllegalArgumentException if the given message is not valid
+     * @throws SSLHandshakeException if a secure TLS session could not be established with the recipient
+     * @throws Throwable If sending the message failed
      */
     public ResponseEntity<String> send(AbstractMX mx) throws Throwable {
-        String host;
-        try {
-            host = ((BusinessAppHdrV02) mx.getAppHdr()).getTo().getFIId().getFinInstnId().getNm();
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Failed to retrieve the recipient from the message.");
-        }
-        URI uri = new URI("https://" + host + endpointOf(mx));
-
+        vs.validateMessage(mx, null);
+        
+        URI uri = endpointOf(mx);
         try {
             return webClientBuilder
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE).build().post().uri(uri)
@@ -82,7 +88,18 @@ public class IntMessageService {
         }
     }
 
-    private String endpointOf(AbstractMX mx) {
-        return CONTEXT_PATH + "/v1/" + mx.getBusinessProcess();
+    private URI endpointOf(AbstractMX mx) {
+        String host;
+        String uri = null;
+        try {
+            host = ((BusinessAppHdrV02) mx.getAppHdr()).getTo().getFIId().getFinInstnId().getNm();
+            uri = "https://" + host + CONTEXT_PATH + "/v1/" + mx.getBusinessProcess();
+            return new URI(uri);
+        } catch (URISyntaxException e) {
+            LOGGER.error("Malformed recipent URI: " + uri);
+        } catch (Exception e) {
+            LOGGER.error(BAD_RECIPIENT);
+        }
+        throw new IllegalArgumentException(BAD_RECIPIENT);
     }
 }

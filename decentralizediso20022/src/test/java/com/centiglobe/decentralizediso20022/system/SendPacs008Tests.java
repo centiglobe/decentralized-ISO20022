@@ -57,8 +57,20 @@ public class SendPacs008Tests {
     @Value("${message.bad-pacs}")
     private String BAD_PACS;
 
-    @Value("${message.bad-header}")
-    private String BAD_HEADER;
+    @Value("${message.bad-from-header}")
+    private String BAD_FROM_HEADER;
+
+    @Value("${message.bad-to-header}")
+    private String BAD_TO_HEADER;
+
+    @Value("${message.bad-recipient}")
+    private String BAD_RECIPIENT;
+
+    @Value("${message.bad-internal-cert}")
+    private String BAD_INTERNAL_CERT;
+
+    @Value("${message.bad-internal-cert}")
+    private String BAD_EXTERNAL_CERT;
 
     @Value("${message.500}")
     private String INTERNAL_ERROR;
@@ -107,8 +119,14 @@ public class SendPacs008Tests {
 
     @Test
     void sendInvalidToTest() throws Exception {
-        validateResponse(sendPost(String.format(mx, "localhost", "self-signed.badssl.com")), HttpStatus.BAD_REQUEST,
-                BAD_HEADER);
+        validateResponse(sendPost(String.format(mx, "localhost", "self-signed.badssl.com")), HttpStatus.FORBIDDEN,
+                BAD_EXTERNAL_CERT);
+    }
+
+    @Test
+    void sendInvalidFromTest() throws Exception {
+        validateResponse(sendPost(String.format(mx, "self-signed.badssl.com", "localhost")), HttpStatus.BAD_REQUEST,
+                String.format(BAD_FROM_HEADER, "self-signed.badssl.com", "localhost"));
     }
 
     @Test
@@ -143,9 +161,11 @@ public class SendPacs008Tests {
 
     @Test
     void sendToExternalAuthenticated() throws Exception {
-        assertDoesNotThrow(() ->
-            sendPost(String.format(mx, "localhost", "localhost"), new URL("https://localhost:443/api/v1/pacs"), true, true)
-        );
+            validateResponse(
+                sendPost(String.format(mx, "localhost", "localhost"), new URL("https://localhost:443/api/v1/pacs"), true, true),
+                HttpStatus.OK,
+                OK
+            );
     }
 
     private void validateResponse(ResponseEntity<String> resp, HttpStatus expectedStatus) {
