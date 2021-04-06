@@ -125,7 +125,7 @@ public class ValidationServiceTest {
         System.out.println(e2.getCause());
         System.out.println("--------------------------------cause2");
 
-        assertTrue(e.getMessage().contains(msg));
-        assertTrue(e2.getMessage().contains(msg));
+        assertTrue(e.getMessage().contains(msg), "\"" + e.getMessage() + "\" did not contain \"" + msg + "\".");
+        assertTrue(e2.getMessage().contains(msg), "\"" + e2.getMessage() + "\" did not contain \"" + msg + "\".");
     }
 }

@@ -25,6 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
  * A controller for handling internal pacs messages
  * 
  * @author William Stackenäs
+ * @author Cactu5
  */
 @RestController
 @Profile("internal")
@@ -52,11 +53,18 @@ public class IntPacsController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IntPacsController.class);
 
+    /**
+     * Validates an incomming pacs message before sending it to the recipient
+     * financial institution
+     * 
+     * @param pacs The pacs message to validate and send
+     * @return The HTTP response of the sent pacs message
+     */
     @PostMapping("")
-    public ResponseEntity handlePacs(@RequestBody String pacs) {
+    public ResponseEntity<String> handlePacs(@RequestBody String pacs) {
         LOGGER.info("Internal cotroller handling pacs message.");
         AbstractMX mx = AbstractMX.parse(pacs);
-        if (mx == null || !mx.getBusinessProcess().equals("pacs"))
+        if (mx == null || !mx.getBusinessProcess().equals("pacs") || mx.getAppHdr() == null)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, BAD_PACS);
 
         BusinessAppHdrV02 header = (BusinessAppHdrV02) mx.getAppHdr();
@@ -70,7 +78,7 @@ public class IntPacsController {
         }
         try {
             return msgService.send(mx);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_ERROR);
         }
     }

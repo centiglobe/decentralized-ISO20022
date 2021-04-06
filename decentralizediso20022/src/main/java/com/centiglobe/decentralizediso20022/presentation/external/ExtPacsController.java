@@ -56,8 +56,15 @@ public class ExtPacsController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExtPacsController.class);
 
+    /**
+     * Validates an incomming pacs message before sending it to the internal
+     * financial institution system
+     * 
+     * @param pacs The pacs message to validate and send
+     * @return The HTTP response of the sent pacs message
+     */
     @PostMapping("")
-    public ResponseEntity handlePacs008(@RequestBody String pacs) throws UnsupportedEncodingException {
+    public ResponseEntity<String> handlePacs(@RequestBody String pacs) throws UnsupportedEncodingException {
         LOGGER.info("External cotroller handling pacs message");
         String decodedPacs = URLDecoder.decode(pacs, StandardCharsets.UTF_8.name());
 
@@ -77,7 +84,7 @@ public class ExtPacsController {
         try {
             msgService.send(mx);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_ERROR);
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, INTERNAL_ERROR);
         }
         // TODO: Respond with the response from the bank service
         throw new ResponseStatusException(HttpStatus.OK, OK);
