@@ -6,6 +6,7 @@ import javax.net.ssl.SSLHandshakeException;
 
 import com.centiglobe.decentralizediso20022.annotation.ApiVersion;
 import com.centiglobe.decentralizediso20022.application.internal.IntMessageService;
+import com.centiglobe.decentralizediso20022.util.Exceptions;
 import com.prowidesoftware.swift.model.mx.MxPacs00800109;
 
 import org.slf4j.Logger;
@@ -39,8 +40,11 @@ public class IntPacsController {
     @Value("${message.bad-internal-cert}")
     private String BAD_INTERNAL_CERT;
 
-    @Value("${message.bad-internal-cert}")
+    @Value("${message.bad-external-cert}")
     private String BAD_EXTERNAL_CERT;
+
+    @Value("${message.internal-send-failure}")
+    private String SEND_FAILURE;
 
     @Autowired
     private IntMessageService msgService;
@@ -65,14 +69,15 @@ public class IntPacsController {
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (WebClientRequestException | SSLHandshakeException e) {
-            if (e.getClass() == SSLHandshakeException.class ||
-                e.getCause().getClass() == SSLHandshakeException.class) {
-                if (e.getMessage().contains("bad_certificate")) {
+            Throwable cause;
+            if ((cause = Exceptions.getCauseOfClass(e, SSLHandshakeException.class)) != null) {
+                LOGGER.warn(cause.getMessage());
+                if (cause.getMessage().contains("bad_certificate")) {
                     throw new ResponseStatusException(HttpStatus.FORBIDDEN, BAD_INTERNAL_CERT);
                 }
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, BAD_EXTERNAL_CERT);
             }
-            throw e;
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, SEND_FAILURE);
         }
     }
 }

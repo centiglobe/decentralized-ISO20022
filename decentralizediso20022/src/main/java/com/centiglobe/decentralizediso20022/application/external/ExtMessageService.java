@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ExtMessageService {
 
-    @Value("${message.200}")
+    @Value("${message.ok}")
     private String OK;
 
     @Autowired

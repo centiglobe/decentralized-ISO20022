@@ -37,8 +37,8 @@ public class ExtPacsController {
     @Value("${message.bad-pacs}")
     private String BAD_PACS;
 
-    @Value("${message.500}")
-    private String INTERNAL_ERROR;
+    @Value("${message.external-send-failure}")
+    private String SEND_FAILURE;
 
     @Autowired
     private ExtMessageService msgService;
@@ -74,7 +74,7 @@ public class ExtPacsController {
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Throwable e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, INTERNAL_ERROR);
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, SEND_FAILURE);
         }
     }
 }

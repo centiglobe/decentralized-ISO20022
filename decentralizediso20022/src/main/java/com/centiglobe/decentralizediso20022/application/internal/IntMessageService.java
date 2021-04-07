@@ -47,6 +47,9 @@ public class IntMessageService {
     @Value("${message.bad-recipient}")
     private String BAD_RECIPIENT;
 
+    @Value("${message.bad-recipient-uri}")
+    private String BAD_URI;
+
     @Autowired
     @Qualifier("secureWebClient")
     public WebClient.Builder webClientBuilder;
@@ -57,10 +60,10 @@ public class IntMessageService {
     /**
      * Sends an ISO 20022 message, if it is valid, using HTTPS to its dedicated endpoint at the
      * recipent host and returns the response returned, regardless of its status
-     * 
+     *
      * @param mx The ISO 20022 message to send
      * @return The HTTP response sent by the recipent host
-     * 
+     *
      * @throws NullPointerException if the given message is null or lacks fields
      * @throws IllegalArgumentException if the given message is not valid
      * @throws WebClientRequestException if, for example, a secure TLS session could not be
@@ -78,9 +81,9 @@ public class IntMessageService {
                     if (resp.statusCode().is4xxClientError()) {
                         // If the response is a 4xx error, it means the internal component mistakenly
                         // validated the message. (Or the external component mistakenly flagged it)
-                        LOGGER.error("Received a " + resp.statusCode() + " status from the recipent.");
+                        LOGGER.error("Received a " + resp.statusCode() + " status from the recipient.");
                     } else {
-                        LOGGER.debug("Received a " + resp.statusCode() + " status from the recipent.");
+                        LOGGER.debug("Received a " + resp.statusCode() + " status from the recipient.");
                     }
                     return Mono.empty();
                 })).toEntity(String.class).block();
@@ -89,18 +92,32 @@ public class IntMessageService {
         }
     }
 
+    /**
+     * Obtains the URI endpoint that the given ISO 20022 message should be sent to
+     * It is based on the {@link BusinessAppHdrV02}'s' To element and the message type
+     * 
+     * @param mx The message whose URI endpoint should be obtained
+     * 
+     * @return The URI that the message should be sent to
+     * @throws IllegalArgumentException if the full URI was malformed
+     */
     private URI endpointOf(AbstractMX mx) {
-        String host;
+        String host = "[blank]";
+        String to;
         String uri = null;
         try {
-            host = ((BusinessAppHdrV02) mx.getAppHdr()).getTo().getFIId().getFinInstnId().getNm();
+            to = ((BusinessAppHdrV02) mx.getAppHdr()).getTo().getFIId().getFinInstnId().getNm();
+            if (to.isBlank())
+                throw new Exception("Blank hostname");
+            host = to;
             uri = "https://" + host + CONTEXT_PATH + "/v1/" + mx.getBusinessProcess();
             return new URI(uri);
         } catch (URISyntaxException e) {
-            LOGGER.error("Malformed recipent URI: " + uri);
+            LOGGER.error(String.format(BAD_URI, uri));
+            throw new IllegalArgumentException(String.format(BAD_URI, uri));
         } catch (Exception e) {
-            LOGGER.error(BAD_RECIPIENT);
+            LOGGER.error(String.format(BAD_RECIPIENT, host));
+            throw new IllegalArgumentException(String.format(BAD_RECIPIENT, host));
         }
-        throw new IllegalArgumentException(BAD_RECIPIENT);
     }
 }

@@ -50,6 +50,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 @ActiveProfiles("test")
 public class SendPacs008Tests {
 
+    @Value("${server.servlet.context-path}")
+    private String CONTEXT_PATH;
+
     @Value("${message.empty}")
     private String EMPTY_MSG;
 
@@ -65,16 +68,22 @@ public class SendPacs008Tests {
     @Value("${message.bad-recipient}")
     private String BAD_RECIPIENT;
 
+    @Value("${message.bad-recipient-uri}")
+    private String BAD_URI;
+
     @Value("${message.bad-internal-cert}")
     private String BAD_INTERNAL_CERT;
 
-    @Value("${message.bad-internal-cert}")
+    @Value("${message.bad-external-cert}")
     private String BAD_EXTERNAL_CERT;
 
-    @Value("${message.500}")
-    private String INTERNAL_ERROR;
+    @Value("${message.internal-send-failure}")
+    private String INT_SEND_FAILURE;
 
-    @Value("${message.200}")
+    @Value("${message.external-send-failure}")
+    private String EXT_SEND_FAILURE;
+
+    @Value("${message.ok}")
     private String OK;
 
     @Value("${server.ssl.key-store}")
@@ -185,7 +194,36 @@ public class SendPacs008Tests {
         );
     }
 
-    // TODO: Is it possible to test the BAD_RECIPIENT error or the BAD_INTERNAL_CERT error?
+    @Test
+    void sendGarbageRecipient() throws Exception {
+        String badhost = "/YHhj?)(H)%\"!%H/#";
+        validateResponse(
+            sendPost(String.format(mx, "localhost", badhost)),
+            HttpStatus.BAD_REQUEST,
+            String.format(BAD_URI, "https://" + badhost + CONTEXT_PATH + "/v1/pacs")
+        );
+    }
+
+    @Test
+    void sendNonexistentRecipient() throws Exception {
+        String nohost = "thisdomainname.isverylong.anddoesntexist.com";
+        validateResponse(
+            sendPost(String.format(mx, "localhost", nohost)),
+            HttpStatus.BAD_GATEWAY,
+            INT_SEND_FAILURE
+        );
+    }
+
+    @Test
+    void sendEmptyRecipient() throws Exception {
+        validateResponse(
+            sendPost(String.format(mx, "localhost", "")),
+            HttpStatus.BAD_REQUEST,
+            String.format(BAD_RECIPIENT, "[blank]")
+        );
+    }
+
+    // TODO: Is it possible to test the EXT_SEND_FAILURE error or the BAD_INTERNAL_CERT error?
 
     private void validateResponse(ResponseEntity<String> resp, HttpStatus expectedStatus) {
         validateResponse(resp, expectedStatus, null);

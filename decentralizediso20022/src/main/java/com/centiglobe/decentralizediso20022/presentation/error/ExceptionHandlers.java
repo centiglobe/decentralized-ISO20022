@@ -30,6 +30,9 @@ public class ExceptionHandlers implements ErrorController {
     @Value("${message.empty}")
     private String EMPTY_MSG;
 
+    @Value("${message.generic-error}")
+    private String GENERIC_ERROR;
+
     private static final String ERR_PATH = "/error";
     private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionHandlers.class);
     
@@ -68,8 +71,7 @@ public class ExceptionHandlers implements ErrorController {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(Exception e) {
         LOGGER.error(e.getMessage(), e);
-        e.printStackTrace();
-        return ResponseMessage.generateError(HttpStatus.INTERNAL_SERVER_ERROR, null);
+        return ResponseMessage.generateError(HttpStatus.INTERNAL_SERVER_ERROR, GENERIC_ERROR);
     }
 
     /**
