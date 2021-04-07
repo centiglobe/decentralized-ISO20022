@@ -69,10 +69,9 @@ public class IntPacsController {
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (WebClientRequestException | SSLHandshakeException e) {
-            Throwable cause;
-            if ((cause = Exceptions.getCauseOfClass(e, SSLHandshakeException.class)) != null) {
-                LOGGER.warn(cause.getMessage());
-                if (cause.getMessage().contains("bad_certificate")) {
+            Throwable sslEx;
+            if ((sslEx = Exceptions.getCauseOfClass(e, SSLHandshakeException.class)) != null) {
+                if (sslEx.getMessage().contains("bad_certificate")) {
                     throw new ResponseStatusException(HttpStatus.FORBIDDEN, BAD_INTERNAL_CERT);
                 }
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, BAD_EXTERNAL_CERT);

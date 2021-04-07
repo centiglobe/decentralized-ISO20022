@@ -58,7 +58,8 @@ public class ExtValidationService {
      * 
      * @param mx The message to validate
      * @param cert The certificate to validate the message against
-     * @throws NullPointerException if the given message is null or lacks fields
+     * @throws NullPointerException if the given message is null or lacks fields, or if
+     *                              the certificate is null
      * @throws IllegalArgumentException if the given message is not valid
      */
     public void validateMessage(AbstractMX mx, X509Certificate cert) throws IllegalArgumentException, NullPointerException {
