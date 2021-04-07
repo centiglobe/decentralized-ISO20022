@@ -27,7 +27,7 @@ public class ValidationService {
     @Value("${server.ssl.keyAlias}")
     private String KEY_ALIAS;
 
-    private X509Certificate us;
+    protected X509Certificate us;
     
     /**
      * Initalizes the validation service with the local certificate in the keystore
@@ -38,9 +38,5 @@ public class ValidationService {
     public void initCertificate() throws Exception {
         KeyStore keyStore = KeyStore.getInstance(new File(KEY_STORE), KEY_PASS.toCharArray());
         us = (X509Certificate) keyStore.getCertificate(KEY_ALIAS);
-    }
-
-    public X509Certificate getOurCertificate() {
-        return us;
     }
 }

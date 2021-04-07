@@ -7,7 +7,6 @@ import com.prowidesoftware.swift.model.mx.AbstractMX;
 import com.prowidesoftware.swift.model.mx.BusinessAppHdrV02;
 
 import org.cryptacular.util.CertUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -20,16 +19,13 @@ import org.springframework.stereotype.Service;
  */
 @Profile("external")
 @Service
-public class ExtValidationService {
+public class ExtValidationService extends ValidationService {
 
     @Value("${message.bad-from-header}")
     private String BAD_FROM_HEADER;
     
     @Value("${message.bad-to-header}")
     private String BAD_TO_HEADER;
-
-    @Autowired
-    private ValidationService vs;
 
     /**
      * Validates the ISO 20022 message. Also validates the message against
@@ -59,7 +55,7 @@ public class ExtValidationService {
      */
     public void validateHeader(BusinessAppHdrV02 header, X509Certificate cert) throws IllegalArgumentException, NullPointerException {
         String toDomain = header.getTo().getFIId().getFinInstnId().getNm();
-        String ourCommonName = CertUtil.subjectCN(vs.getOurCertificate());
+        String ourCommonName = CertUtil.subjectCN(us);
 
         if (!toDomain.equals(ourCommonName))
             throw new IllegalArgumentException(String.format(BAD_TO_HEADER, toDomain, ourCommonName));
