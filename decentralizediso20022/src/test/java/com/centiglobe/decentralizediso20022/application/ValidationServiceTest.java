@@ -59,8 +59,8 @@ public class ValidationServiceTest {
 
         MxPacs00800109 mx = MxPacs00800109.parse(Lib.readResource("example1WithHeader.xml"));
 
-        vs.validateHeaderFrom((BusinessAppHdrV02) mx.getAppHdr(), 443);
-        vs.validateHeaderTo((BusinessAppHdrV02) mx.getAppHdr(), 443);
+        vs.validateHeaderFrom((BusinessAppHdrV02) mx.getAppHdr());
+        vs.validateHeaderTo((BusinessAppHdrV02) mx.getAppHdr());
 
     }
 
@@ -113,11 +113,11 @@ public class ValidationServiceTest {
     private void testInvalidHeaderCustom(MxPacs00800109 mx, String msg) {
 
         Exception e = assertThrows(WebClientRequestException.class, () -> {
-            vs.validateHeaderFrom((BusinessAppHdrV02) mx.getAppHdr(), 443);
+            vs.validateHeaderFrom((BusinessAppHdrV02) mx.getAppHdr());
         });
 
         Exception e2 = assertThrows(WebClientRequestException.class, () -> {
-            vs.validateHeaderTo((BusinessAppHdrV02) mx.getAppHdr(), 443);
+            vs.validateHeaderTo((BusinessAppHdrV02) mx.getAppHdr());
         });
 
         System.out.println("--------------------------------cause1");
@@ -125,7 +125,7 @@ public class ValidationServiceTest {
         System.out.println(e2.getCause());
         System.out.println("--------------------------------cause2");
 
-        assertTrue(e.getMessage().contains(msg));
-        assertTrue(e2.getMessage().contains(msg));
+        assertTrue(e.getMessage().contains(msg), "\"" + e.getMessage() + "\" did not contain \"" + msg + "\".");
+        assertTrue(e2.getMessage().contains(msg), "\"" + e2.getMessage() + "\" did not contain \"" + msg + "\".");
     }
 }

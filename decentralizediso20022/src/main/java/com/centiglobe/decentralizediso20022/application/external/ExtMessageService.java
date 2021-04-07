@@ -14,12 +14,12 @@ public class ExtMessageService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExtMessageService.class);
     
     /**
-     * Sends an ISO 20022 message using to the private bank system
+     * Sends an ISO 20022 message using to the private financial institution
      * 
      * @param mx The ISO 20022 message to send
      */
     public void send(AbstractMX mx) throws Exception {
-        // TODO: Send message to financial institution using configured endpoint
+        // TODO: Send message to financial institution using a configured endpoint
         LOGGER.info("The following ISO 20022 message was sent to the Bank:\n" + mx.message());
     }
 }

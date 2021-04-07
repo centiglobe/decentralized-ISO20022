@@ -1,6 +1,9 @@
 package com.centiglobe.decentralizediso20022.config;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
+
+import com.centiglobe.decentralizediso20022.util.HTTPSFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,17 +18,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import io.netty.handler.ssl.SslContext;
-import nl.altindag.ssl.SSLFactory;
-import nl.altindag.ssl.util.NettySslUtils;
+import io.netty.handler.ssl.SslContextBuilder;
 import reactor.netty.http.client.HttpClient;
-
-import static com.centiglobe.decentralizediso20022.util.HTTPSCustomTruststore.createTrustManager;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
 /**
@@ -41,6 +42,12 @@ public class DecentralizedISO20022Config extends WebMvcConfigurationSupport {
     @Autowired
     @Lazy
     private ReactorClientHttpConnector reactorClient;
+
+    @Value("${server.ssl.key-store}")
+    private String KEY_STORE;
+
+    @Value("${server.ssl.key-store-password}")
+    private String KEY_PASS;
 
     @Value("${server.ssl.trust-store}")
     private String TRUST_STORE;
@@ -64,26 +71,31 @@ public class DecentralizedISO20022Config extends WebMvcConfigurationSupport {
      * Generates a secure <code>ReactorClientHttpConnector</code>.
      * 
      * @return the secure <code>ReactorClientHttpConnector</code>
-     * @throws KeyStoreException                  if keystore is the problem
+     * @throws KeyStoreException                  if the keystore is the problem
      * @throws NoSuchAlgorithmException           if the algorithm does not exist
      * @throws CertificateException               if there is a problem with the
      *                                            certificate
      * @throws InvalidAlgorithmParameterException if the algorithm is invalid or
      *                                            inappropriate
-     * @throws IOException                        if any problems occure while
+     * @throws IOException                        if any problems occur while
      *                                            reading the truststore
+     * @throws UnrecoverableKeyException          if the keys could not be recovered
+     *                                            from the keystore
      */
     @Bean
     public ReactorClientHttpConnector getReactorClientConfig() throws KeyStoreException, NoSuchAlgorithmException,
-            CertificateException, InvalidAlgorithmParameterException, IOException {
-        // extract the trust store path relative to the resource folder.
+            CertificateException, InvalidAlgorithmParameterException, IOException, UnrecoverableKeyException {
+        // extract the key store paths relative to the resource folder.
+        String keystore = new File(KEY_STORE).getName();
         String truststore = new File(TRUST_STORE).getName();
+        
+        KeyManagerFactory kmf = HTTPSFactory.createKeyManager(keystore, KEY_PASS);
+        TrustManagerFactory tmf = HTTPSFactory.createTrustManager(truststore, TRUST_PASS);
 
-        TrustManagerFactory tm = createTrustManager(truststore, TRUST_PASS);
-
-        SSLFactory sslFactory = SSLFactory.builder().withTrustMaterial(tm).build();
-
-        SslContext sslContext = NettySslUtils.forClient(sslFactory).build();
+        SslContext sslContext = SslContextBuilder.forClient()
+            .keyManager(kmf)
+            .trustManager(tmf)
+            .build();
         HttpClient httpClient = HttpClient.create().secure(sslSpec -> sslSpec.sslContext(sslContext));
         return new ReactorClientHttpConnector(httpClient);
     }
