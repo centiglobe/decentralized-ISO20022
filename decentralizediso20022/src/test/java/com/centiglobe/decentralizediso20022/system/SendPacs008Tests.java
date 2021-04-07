@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -128,6 +129,12 @@ public class SendPacs008Tests {
     @Test
     void sendInvalidToTest() throws Exception {
         validateResponse(sendPost(String.format(mx, "localhost", "self-signed.badssl.com")), HttpStatus.FORBIDDEN,
+                BAD_EXTERNAL_CERT);
+    }
+
+    @Test
+    void sendRevokedToTest() throws Exception {
+        validateResponse(sendPost(String.format(mx, "localhost", "revoked.badssl.com")), HttpStatus.FORBIDDEN,
                 BAD_EXTERNAL_CERT);
     }
 
@@ -299,10 +306,10 @@ public class SendPacs008Tests {
         TrustManagerFactory tmf = null;
 
         if (keystore) {
-            kmf = HTTPSFactory.createKeyManager(KEY_STORE, KEY_PASS);
+            kmf = HTTPSFactory.createKeyManager(new File(KEY_STORE).getName(), KEY_PASS);
         }
         if (truststore) {
-            tmf = HTTPSFactory.createTrustManager(TRUST_STORE, TRUST_PASS);
+            tmf = HTTPSFactory.createTrustManager(new File(TRUST_STORE).getName(), TRUST_PASS);
         }
 
         SSLContext ctx = SSLContext.getInstance("TLS");
