@@ -7,13 +7,12 @@ services:
         - STORES_FOLDER=src/main/resources
     environment:
       - spring.profiles.active=internal
-      - server.port=8080
       - server.servlet.context-path=/api
+      - server.port=8080
       - server.ssl.key-store=src/main/resources/keystore.p12
       - server.ssl.key-store-password=qwerty
       - server.ssl.enabled=false
       - server.ssl.trust-store=src/main/resources/truststore.p12
-      - server.ssl.trust-store-password=ytrewq
-      - recipient.port=443
+      - server.ssl.trust-store-password=secret
     ports:
       - "8080:8080"
