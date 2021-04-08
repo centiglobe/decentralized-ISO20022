@@ -30,5 +30,5 @@ The following instructions describe how to demo the system.
    1. Navigate to `/decentralizediso20022`.
    3. The environment variables can be customized in the docker-compose files, but for demo purposes the default environment variables are enough.
    4. Start both docker containers at the same time with `docker-compose -f docker-compose.external.yml -f docker-compose.internal.yml up --build`.
-   5. To make sure the microservices work as intenden you can send a post request to `internal`'s pacs endpoint. An example request payload can be found in `examples/demo/docker-demo.xml`. With the default environment variables the request should be sent to: `localhost:8080/api/v1/pacs`.
+   5. To make sure the microservices work as intended you can send a post request to `internal`'s pacs endpoint. An example request payload can be found in `examples/demo/docker-demo.xml`. With the default environment variables the request should be sent to: `localhost:8080/api/v1/pacs`.
    6. If successfull the response should contain `The message was processed.`
