@@ -26,3 +26,10 @@ The following instructions describe how to set up the system.
    3. The environment variables can be customized in the docker-compose files.
    4. Start docker containers. Start both docker containers the same time with `docker-compose -f docker-compose.external.yml -f docker-compose.internal.yml up --build`
    5. Or start the desired container with e.g. `docker-compose -f docker-compose.internal.yml up --build`
+## Demo instructions
+   1. Navigate to `/decentralizediso20022`.
+   2. Run `./mvnw clean package`
+   3. The environment variables can be customized in the docker-compose files, but for demo purposes the default environment variables are enough.
+   4. Start docker containers. Start both docker containers the same time with `docker-compose -f docker-compose.external.yml -f docker-compose.internal.yml up --build` 
+   5. To make sure the microservices work you can send a post request to `internal`'s pacs endpoint. An example request payload can be found in `examples/demo/docker-demo.xml`. With the default environment variables the request should be sent to: `localhost:8080/api/v1/pacs`.
+   6. If successfull the response should contain `The message was processed.`
