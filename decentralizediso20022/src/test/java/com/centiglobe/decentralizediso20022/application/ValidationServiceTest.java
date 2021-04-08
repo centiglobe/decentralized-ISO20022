@@ -69,7 +69,7 @@ public class ValidationServiceTest {
         MxPacs00800109 mx = MxPacs00800109.parse(Lib.readResource("headerCertExpired.xml"));
 
         String msg = "unable to find valid certification path to requested target";
-        assertTrue(false);
+
         testInvalidHeaderCustom(mx, msg);
 
     }
