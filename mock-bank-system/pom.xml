@@ -19,13 +19,20 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<!-- For handling ISO 20022 mesages -->
+		<dependency>
+			<groupId>com.prowidesoftware</groupId>
+			<artifactId>pw-iso20022</artifactId>
+			<version>SRU2020-9.1.5</version>
 		</dependency>
 	</dependencies>
 
