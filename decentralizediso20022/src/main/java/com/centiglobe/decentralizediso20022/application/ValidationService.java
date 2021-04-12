@@ -1,81 +1,42 @@
 package com.centiglobe.decentralizediso20022.application;
 
-import com.prowidesoftware.swift.model.mx.BusinessAppHdrV02;
+import java.io.File;
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-
-import reactor.core.Exceptions;
 
 /**
- * A Validation service used for validating SSL certificates.
+ * A Validation service used for validating ISO 20022 messages.
  * 
  * @author Cactu5
+ * @author William
  */
 @Service
 public class ValidationService {
-    @Autowired
-    @Qualifier("secureWebClient")
-    public WebClient.Builder webClientBuilder;
 
+    @Value("${server.ssl.key-store}")
+    private String KEY_STORE;
+
+    @Value("${server.ssl.key-store-password}")
+    private String KEY_PASS;
+
+    @Value("${server.ssl.keyAlias}")
+    private String KEY_ALIAS;
+
+    protected X509Certificate us;
+    
     /**
-     * Checks the certificate of the specified URL address.
+     * Initalizes the validation service with the local certificate in the keystore
      * 
-     * @param urlString
-     * @throws Throwable
+     * @throws Exception if the certificate could not be obtained
      */
-    public void checkCertificate(String urlString) throws Throwable {
-        if (webClientBuilder == null) {
-            throw new Exception("The webclient cannot be null.");
-        }
-
-        try {
-            webClientBuilder.build().get().uri(urlString).retrieve().bodyToMono(String.class).block();
-        } catch (Exception e) {
-            throw Exceptions.unwrap(e);
-        }
-    }
-
-    /**
-     * Validates the domains nested in the To and Fr element based off the domain's
-     * SSL certificate. The certificate must also be present in the specified
-     * truststore for it to be valid.
-     * 
-     * @param header the header
-     * @throws Throwable if anything goes wrong
-     */
-    public void validateHeader(BusinessAppHdrV02 header) throws Throwable {
-        validateHeaderTo(header);
-        validateHeaderFrom(header);
-    }
-
-    /**
-     * Validates the domain nested in the To element based off the domain's SSL
-     * certificate. The certificate must also be present in the specified truststore
-     * for it to be valid.
-     * 
-     * @param header the header
-     * @throws Throwable
-     */
-    public void validateHeaderTo(BusinessAppHdrV02 header) throws Throwable {
-        String domain = header.getTo().getFIId().getFinInstnId().getNm();
-
-        checkCertificate("https://" + domain);
-    }
-
-    /**
-     * Validates the domain name nested in the Fr element based off the domain's SSL
-     * certificate. The certificate must be present in the specified truststore for
-     * it to be valid.
-     * 
-     * @param header the header
-     * @throws Throwable
-     */
-    public void validateHeaderFrom(BusinessAppHdrV02 header) throws Throwable {
-        String domain = header.getFr().getFIId().getFinInstnId().getNm();
-
-        checkCertificate("https://" + domain);
+    @PostConstruct
+    public void initCertificate() throws Exception {
+        KeyStore keyStore = KeyStore.getInstance(new File(KEY_STORE), KEY_PASS.toCharArray());
+        us = (X509Certificate) keyStore.getCertificate(KEY_ALIAS);
     }
 }
