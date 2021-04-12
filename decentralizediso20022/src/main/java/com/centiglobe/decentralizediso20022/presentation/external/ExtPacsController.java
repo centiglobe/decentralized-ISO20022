@@ -2,15 +2,14 @@ package com.centiglobe.decentralizediso20022.presentation.external;
 
 import org.slf4j.LoggerFactory;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.SSLException;
+import javax.servlet.http.HttpServletRequest;
 
 import com.centiglobe.decentralizediso20022.annotation.ApiVersion;
-import com.centiglobe.decentralizediso20022.application.ValidationService;
 import com.centiglobe.decentralizediso20022.application.external.ExtMessageService;
-import com.prowidesoftware.swift.model.mx.AbstractMX;
-import com.prowidesoftware.swift.model.mx.BusinessAppHdrV02;
+import com.prowidesoftware.swift.model.mx.MxPacs00800109;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -39,20 +37,11 @@ public class ExtPacsController {
     @Value("${message.bad-pacs}")
     private String BAD_PACS;
 
-    @Value("${message.bad-header}")
-    private String BAD_HEADER;
-
-    @Value("${message.500}")
-    private String INTERNAL_ERROR;
-
-    @Value("${message.200}")
-    private String OK;
+    @Value("${message.external-send-failure}")
+    private String SEND_FAILURE;
 
     @Autowired
     private ExtMessageService msgService;
-
-    @Autowired
-    private ValidationService vs;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExtPacsController.class);
 
@@ -60,33 +49,32 @@ public class ExtPacsController {
      * Validates an incomming pacs message before sending it to the internal
      * financial institution system
      * 
+     * @param req The HTTP request that was received along with various attributes from the TLS handshake
      * @param pacs The pacs message to validate and send
+     * 
      * @return The HTTP response of the sent pacs message
+     * @throws SSLException if the certificate was marked as valid by Spring but could not be obtained
      */
     @PostMapping("")
-    public ResponseEntity<String> handlePacs(@RequestBody String pacs) throws UnsupportedEncodingException {
-        LOGGER.info("External cotroller handling pacs message");
-        String decodedPacs = URLDecoder.decode(pacs, StandardCharsets.UTF_8.name());
+    public ResponseEntity<String> handlePacs(HttpServletRequest req, @RequestBody String pacs) throws SSLException {
+        MxPacs00800109 mxPacs;
+        X509Certificate[] certs = (X509Certificate[]) req.getAttribute("javax.servlet.request.X509Certificate");
+        if (certs == null || certs.length < 1) {
+            // This should never happen unless Spring fails to provide the certificate
+            // from the handshake as an attribute
+            throw new SSLException("The TLS certificate from the handshake was unavailable.");
+        }
+        LOGGER.info("External cotroller handling pacs message with cert " + certs[0].getSubjectX500Principal());
 
-        AbstractMX mx = AbstractMX.parse(decodedPacs);
-        if (mx == null || !mx.getBusinessProcess().equals("pacs"))
+        mxPacs = MxPacs00800109.parse(pacs);
+        try {
+            return msgService.send(mxPacs, certs[0]);
+        } catch (NullPointerException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, BAD_PACS);
-
-        BusinessAppHdrV02 header = (BusinessAppHdrV02) mx.getAppHdr();
-        try {
-            vs.validateHeader(header);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Throwable e) {
-            // TODO: Research if only WebClientResponseException needs to be ignored.
-            if (!(e instanceof WebClientResponseException)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, BAD_HEADER);
-            }
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, SEND_FAILURE);
         }
-        try {
-            msgService.send(mx);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, INTERNAL_ERROR);
-        }
-        // TODO: Respond with the response from the bank service
-        throw new ResponseStatusException(HttpStatus.OK, OK);
     }
 }
