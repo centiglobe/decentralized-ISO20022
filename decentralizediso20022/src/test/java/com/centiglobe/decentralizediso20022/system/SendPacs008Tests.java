@@ -1,11 +1,11 @@
 package com.centiglobe.decentralizediso20022.system;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -38,7 +38,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.client.WebClient;
 
 /**
@@ -48,8 +47,10 @@ import org.springframework.web.reactive.function.client.WebClient;
  * @author William Stackenäs
  */
 @SpringBootTest
-@ActiveProfiles("test")
 public class SendPacs008Tests {
+
+    @Value("${server.servlet.context-path}")
+    private String CONTEXT_PATH;
 
     @Value("${message.empty}")
     private String EMPTY_MSG;
@@ -57,14 +58,29 @@ public class SendPacs008Tests {
     @Value("${message.bad-pacs}")
     private String BAD_PACS;
 
-    @Value("${message.bad-header}")
-    private String BAD_HEADER;
+    @Value("${message.bad-from-header}")
+    private String BAD_FROM_HEADER;
 
-    @Value("${message.500}")
-    private String INTERNAL_ERROR;
+    @Value("${message.bad-to-header}")
+    private String BAD_TO_HEADER;
 
-    @Value("${message.200}")
-    private String OK;
+    @Value("${message.bad-recipient}")
+    private String BAD_RECIPIENT;
+
+    @Value("${message.bad-recipient-uri}")
+    private String BAD_URI;
+
+    @Value("${message.bad-internal-cert}")
+    private String BAD_INTERNAL_CERT;
+
+    @Value("${message.bad-external-cert}")
+    private String BAD_EXTERNAL_CERT;
+
+    @Value("${message.internal-send-failure}")
+    private String INT_SEND_FAILURE;
+
+    @Value("${message.external-send-failure}")
+    private String EXT_SEND_FAILURE;
 
     @Value("${server.ssl.key-store}")
     private String KEY_STORE;
@@ -72,10 +88,10 @@ public class SendPacs008Tests {
     @Value("${server.ssl.key-store-password}")
     private String KEY_PASS;
 
-    @Value("${server.ssl.test-trust-store}")
+    @Value("${server.ssl.trust-store}")
     private String TRUST_STORE;
 
-    @Value("${server.ssl.test-trust-store-password}")
+    @Value("${server.ssl.trust-store-password}")
     private String TRUST_PASS;
 
     @Autowired
@@ -97,7 +113,7 @@ public class SendPacs008Tests {
 
     @Test
     void sendPacsTest() throws Exception {
-        validateResponse(sendPost(String.format(mx, "localhost", "localhost")), HttpStatus.OK, OK);
+        validateResponse(sendPost(String.format(mx, "localhost", "localhost")), HttpStatus.OK, "pacs.002");
     }
 
     @Test
@@ -107,13 +123,30 @@ public class SendPacs008Tests {
 
     @Test
     void sendInvalidToTest() throws Exception {
-        validateResponse(sendPost(String.format(mx, "localhost", "self-signed.badssl.com")), HttpStatus.BAD_REQUEST,
-                BAD_HEADER);
+        validateResponse(sendPost(String.format(mx, "localhost", "self-signed.badssl.com")), HttpStatus.FORBIDDEN,
+                BAD_EXTERNAL_CERT);
+    }
+
+    @Test
+    void sendRevokedToTest() throws Exception {
+        validateResponse(sendPost(String.format(mx, "localhost", "revoked.badssl.com")), HttpStatus.FORBIDDEN,
+                BAD_EXTERNAL_CERT);
+    }
+
+    @Test
+    void sendInvalidFromTest() throws Exception {
+        validateResponse(sendPost(String.format(mx, "self-signed.badssl.com", "localhost")), HttpStatus.BAD_REQUEST,
+                String.format(BAD_FROM_HEADER, "self-signed.badssl.com", "localhost"));
     }
 
     @Test
     void sendEmptyTest() throws Exception {
         validateResponse(sendPost(""), HttpStatus.BAD_REQUEST, EMPTY_MSG);
+    }
+
+    @Test
+    void sendToExternalEmptyTest() throws Exception {
+        validateResponse(sendPost("", new URL("https://localhost:443/api/v1/pacs"), true, true), HttpStatus.BAD_REQUEST, EMPTY_MSG);
     }
 
     @Test
@@ -143,10 +176,62 @@ public class SendPacs008Tests {
 
     @Test
     void sendToExternalAuthenticated() throws Exception {
-        assertDoesNotThrow(() ->
-            sendPost(String.format(mx, "localhost", "localhost"), new URL("https://localhost:443/api/v1/pacs"), true, true)
+        validateResponse(
+            sendPost(String.format(mx, "localhost", "localhost"), new URL("https://localhost:443/api/v1/pacs"), true, true),
+            HttpStatus.OK,
+            "pacs.002"
         );
     }
+
+    @Test
+    void sendToExternalBadTo() throws Exception {
+        validateResponse(
+            sendPost(String.format(mx, "localhost", "self-signed.badssl.com"), new URL("https://localhost:443/api/v1/pacs"), true, true),
+            HttpStatus.BAD_REQUEST,
+            String.format(BAD_TO_HEADER, "self-signed.badssl.com", "localhost")
+        );
+    }
+
+    @Test
+    void sendToExternalBadFrom() throws Exception {
+        validateResponse(
+            sendPost(String.format(mx, "self-signed.badssl.com", "localhost"), new URL("https://localhost:443/api/v1/pacs"), true, true),
+            HttpStatus.BAD_REQUEST,
+            String.format(BAD_FROM_HEADER, "self-signed.badssl.com", "localhost")
+        );
+    }
+
+    @Test
+    void sendGarbageRecipient() throws Exception {
+        String badhost = "/YHhj?)(H)%\"!%H/#";
+        validateResponse(
+            sendPost(String.format(mx, "localhost", badhost)),
+            HttpStatus.BAD_REQUEST,
+            String.format(BAD_URI, "https://" + badhost + CONTEXT_PATH + "/v1/pacs")
+        );
+    }
+
+    @Test
+    void sendNonexistentRecipient() throws Exception {
+        String nohost = "thisdomainname.isverylong.anddoesntexist.com";
+        validateResponse(
+            sendPost(String.format(mx, "localhost", nohost)),
+            HttpStatus.BAD_GATEWAY,
+            INT_SEND_FAILURE
+        );
+    }
+
+    @Test
+    void sendEmptyRecipient() throws Exception {
+        validateResponse(
+            sendPost(String.format(mx, "localhost", "")),
+            HttpStatus.BAD_REQUEST,
+            String.format(BAD_RECIPIENT, "[blank]")
+        );
+    }
+
+    // TODO: Is it possible to test the EXT_SEND_FAILURE error or the BAD_INTERNAL_CERT error?
+    // So far they have only been tested manually
 
     private void validateResponse(ResponseEntity<String> resp, HttpStatus expectedStatus) {
         validateResponse(resp, expectedStatus, null);
@@ -154,7 +239,7 @@ public class SendPacs008Tests {
 
     private void validateResponse(ResponseEntity<String> resp, HttpStatus expectedStatus, String expectedMsg) {
         assertEquals(expectedStatus, resp.getStatusCode());
-        assertEquals(resp.getHeaders().getContentType(), MediaType.APPLICATION_XML);
+        assertEquals(MediaType.APPLICATION_XML, resp.getHeaders().getContentType());
         String body = resp.getBody().toString();
         if (expectedMsg != null)
             assertTrue(body.contains(expectedMsg), body + "\n\nDid not contain\n\n" + expectedMsg + "\n");
@@ -190,6 +275,9 @@ public class SendPacs008Tests {
         return getHttpResponse(conn);
     }
 
+    /**
+     * Doesn't parse the response 100% correctly, but it gets the job done for these tests
+     */
     private ResponseEntity<String> getHttpResponse(HttpURLConnection con) throws IOException {
         InputStream reader = hasErrorResponse(con) ? con.getErrorStream() : con.getInputStream();
         BufferedReader in = new BufferedReader(new InputStreamReader(reader, "utf-8"));
@@ -219,10 +307,10 @@ public class SendPacs008Tests {
         TrustManagerFactory tmf = null;
 
         if (keystore) {
-            kmf = HTTPSFactory.createKeyManager(KEY_STORE, KEY_PASS);
+            kmf = HTTPSFactory.createKeyManager(new File(KEY_STORE).getName(), KEY_PASS);
         }
         if (truststore) {
-            tmf = HTTPSFactory.createTrustManager(TRUST_STORE, TRUST_PASS);
+            tmf = HTTPSFactory.createTrustManager(new File(TRUST_STORE).getName(), TRUST_PASS);
         }
 
         SSLContext ctx = SSLContext.getInstance("TLS");

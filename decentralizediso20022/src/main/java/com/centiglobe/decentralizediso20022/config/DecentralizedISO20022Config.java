@@ -33,7 +33,7 @@ import java.security.cert.CertificateException;
  * The configuration class for the project.
  * 
  * @author Cactu5
- * @author William Stacknäs
+ * @author William Stackenäs
  */
 @Configuration
 @ComponentScan({ "com.centiglobe.decentralizediso20022" })
@@ -88,7 +88,7 @@ public class DecentralizedISO20022Config extends WebMvcConfigurationSupport {
         // extract the key store paths relative to the resource folder.
         String keystore = new File(KEY_STORE).getName();
         String truststore = new File(TRUST_STORE).getName();
-        
+
         KeyManagerFactory kmf = HTTPSFactory.createKeyManager(keystore, KEY_PASS);
         TrustManagerFactory tmf = HTTPSFactory.createTrustManager(truststore, TRUST_PASS);
 

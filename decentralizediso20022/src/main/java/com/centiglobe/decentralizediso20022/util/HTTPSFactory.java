@@ -22,6 +22,7 @@ import javax.net.ssl.TrustManagerFactory;
  * A utility class for configuring a the truststore for a HTTPS connection.
  * 
  * @author Cactu5
+ * @author William Stackenäs
  */
 public class HTTPSFactory {
 
