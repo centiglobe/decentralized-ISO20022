@@ -1,0 +1,20 @@
+version: '3'
+services:
+  decentralized-iso20022-external:
+    build:
+      context: .
+      args: 
+        - STORES_FOLDER=src/main/resources
+    environment:
+      - spring.profiles.active=external
+      - server.servlet.context-path=/api
+      - server.port=443
+      - server.ssl.key-store=src/main/resources/keystore.p12
+      - server.ssl.key-store-password=qwerty
+      - security.require-ssl=true
+      - server.ssl.client-auth=need
+      - server.ssl.trust-store=src/main/resources/truststore.p12
+      - server.ssl.trust-store-password=secret
+    ports:
+      - "443:443"
+    
