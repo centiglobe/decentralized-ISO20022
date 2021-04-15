@@ -1,18 +1,10 @@
 version: '3'
-networks:
-  isolation-network:
-    driver: bridge
-
 services:
   mock-bank-system:
     build:
       context: mock-bank-system
     ports:
       - "4321:4321" 
-    networks:
-      - isolation-network
   decentralized-iso20022:
     build:
       context: decentralizediso20022
-    networks:
-      - isolation-network
