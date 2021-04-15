@@ -24,4 +24,4 @@ jobs:
       run: |
         chmod +x ./demo.sh
         ./demo.sh
-        curl -X POST http://localhost/api/v1/pacs
+        curl -X POST http://localhost:8080/api/v1/pacs
