@@ -1,0 +1,7 @@
+version: '3'
+services:
+  decentralized-iso20022-external:
+    build:
+      context: .
+    ports:
+      - "8080:8080"
