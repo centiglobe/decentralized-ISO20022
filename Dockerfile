@@ -4,7 +4,7 @@ ARG PROJ_FOLDER
 WORKDIR /app
 COPY ${PROJ_FOLDER}/src /app/src
 COPY ${PROJ_FOLDER}/pom.xml /app/pom.xml
-RUN mvn -B -f /app/pom.xml clean package
+RUN mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -f /app/pom.xml clean package
 
 # Run
 FROM openjdk:11

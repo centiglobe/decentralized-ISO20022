@@ -21,4 +21,4 @@ jobs:
         git checkout ${{ github.head_ref }}
 
     - name: Build with Maven in Docker
-      run: docker-compose --project-directory . -f mock-bank-system/docker-compose.yml -f decentralizediso20022/docker-compose.external.yml -f decentralizediso20022/docker-compose.internal.yml build
+      run: docker-compose -f docker-compose.yml build
