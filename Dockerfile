@@ -1,8 +1,8 @@
 # Build
 FROM maven:3.6.0-jdk-11-slim AS build
-COPY src /app/src
+COPY ${PROJ_FOLDER}/src /app/src
 WORKDIR /app
-COPY pom.xml pom.xml
+COPY ${PROJ_FOLDER}/pom.xml pom.xml
 RUN mvn -B -f /app/pom.xml clean package
 
 # Run
