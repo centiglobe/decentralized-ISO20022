@@ -26,4 +26,4 @@ jobs:
         docker build -t mock-bank-system mock-bank-system
         docker ps -a
         docker run -d -p "4321:4321" --network=mynetwork mock-bank-system
-        docker build -f decentralizediso20022/Dockerfile --network=mynetwork
+        docker build --network=mynetwork decentralizediso20022
