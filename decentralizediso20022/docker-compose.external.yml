@@ -15,6 +15,7 @@ services:
       - server.ssl.client-auth=need
       - server.ssl.trust-store=src/main/resources/truststore.p12
       - server.ssl.trust-store-password=secret
+      - bank.system.endpoint=http://mock-bank-system:4321/handle
     ports:
       - "443:443"
     
