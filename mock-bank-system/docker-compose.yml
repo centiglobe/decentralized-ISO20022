@@ -1,0 +1,11 @@
+version: '3'
+services:
+  mock-bank-system:
+    build:
+      context: .
+      args: 
+        - STORES_FOLDER=src/main/resources
+    environment:
+      - server.port=4321
+    ports:
+      - "4321:4321"
