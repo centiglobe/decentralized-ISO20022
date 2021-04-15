@@ -1,13 +1,5 @@
 version: '3'
 services:
-  mock-bank-system:
-    hostname: mock-bank-system
-    build:
-      context: mock-bank-system
-    expose:
-      - "4321"
   decentralized-iso20022:
     build:
       context: decentralizediso20022
-    depends_on:
-      - mock-bank-system

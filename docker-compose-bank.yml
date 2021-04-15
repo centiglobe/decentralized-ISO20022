@@ -1,0 +1,8 @@
+version: '3'
+services:
+  mock-bank-system:
+    hostname: mock-bank-system
+    build:
+      context: mock-bank-system
+    expose:
+      - "4321"
