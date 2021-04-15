@@ -22,6 +22,7 @@ jobs:
 
     - name: Build with Maven in Docker
       run: |
+        docker network create mynetwork
         docker build -t mockbanksystem mock-bank-system
-        docker run -d -p "4321:4321" --name=mockbanksystem mockbanksystem
-        docker build decentralizediso20022
+        docker run -d -p "4321:4321" --network=mynetwork --name=mockbanksystem mockbanksystem
+        docker build --network=mynetwork decentralizediso20022
