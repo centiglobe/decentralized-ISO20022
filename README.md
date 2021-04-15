@@ -19,11 +19,11 @@ A sequence diagram for sending and recieving a pacs.008 message with the microse
 An example use case of the microservice in payments with FX settlements on a distributed ledger, and the different ISO20022 messages that can be used for communication.
 ![Image of a sequence diagram in a settlement and payments use case](images/sequence-diagram-02.png)
 
-## Demo
-The following instructions describe how to run a demo of the system using a stub bank system and the default configuration.
+## Demo (The following section needs an update)
+The following instructions describe how to run a demo of the system using a mock bank system and the default configuration.
    1. Navigate to `/decentralizediso20022`.
    3. The environment variables can be customized in the docker-compose files, but for demo purposes the default environment variables are enough.
-   4. Start the microservice by running `docker-compose -f docker-compose.external.yml -f docker-compose.internal.yml up --build`.
+   4. Start the microservice and mock bank system by running `./demo.sh`.
    5. Send a post request to `localhost:8080/api/v1/pacs` containing a Pacs.008 message in the message body. An example request payload can be found in `examples/demo/docker-demo.xml`.
    6. If successful the response should contain a Pacs.002 message, otherwise an error message explaining what went wrong.
 
