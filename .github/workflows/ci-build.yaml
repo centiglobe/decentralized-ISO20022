@@ -24,6 +24,5 @@ jobs:
       run: |
         docker-compose -f docker-compose-bank.yml up -d
         docker ps -a
-        curl http://127.0.0.1:4321
-        curl http://localhost:4321
+        docker inspect −−format '{{ .NetworkSettings.IPAddress }}' $(docker ps −q)
         docker-compose -f docker-compose.yml build
