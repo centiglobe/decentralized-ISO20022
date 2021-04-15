@@ -21,4 +21,4 @@ jobs:
         git checkout ${{ github.head_ref }}
 
     - name: Build with Maven in Docker
-      run: ./demo.sh
+      run: ls && ./demo.sh

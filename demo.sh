@@ -1,3 +1,4 @@
+#!/bin/sh
 docker network create mynetwork
 docker build -t mockbanksystem mock-bank-system
 docker run -d --network=mynetwork --name=mockbanksystem mockbanksystem
