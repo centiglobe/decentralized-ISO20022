@@ -9,3 +9,4 @@ RUN mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMaven
 FROM openjdk:11
 COPY --from=build /app/target/*.jar app.jar
 ENTRYPOINT [ "java", "-jar", "/app.jar" ]
+EXPOSE 4321
