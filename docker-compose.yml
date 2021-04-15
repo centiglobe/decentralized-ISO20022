@@ -4,25 +4,10 @@ services:
     hostname: mock-bank-system
     build:
       context: mock-bank-system
-    environment:
-      - server.port=4321
     expose:
       - "4321"
-    ports:
-      - "4321:4321"
   decentralized-iso20022:
     build:
       context: decentralizediso20022
-    environment:
-      - spring.profiles.active=internal
-      - server.servlet.context-path=/api
-      - server.port=8080
-      - server.ssl.key-store=src/main/resources/keystore.p12
-      - server.ssl.key-store-password=qwerty
-      - server.ssl.enabled=false
-      - server.ssl.trust-store=src/main/resources/truststore.p12
-      - server.ssl.trust-store-password=secret
-    ports:
-      - "8080:8080"
     depends_on:
       - mock-bank-system
