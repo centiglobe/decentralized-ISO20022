@@ -22,4 +22,8 @@ jobs:
 
     - name: Build with Maven in Docker
       run: |
-        docker-compose -f docker-compose.yml up
+        docker network create mynetwork
+        docker build -f mock-bank-system/Dockerfile -t mock-bank-system
+        docker ps -a
+        docker run -d -p "4321:4321" --network=mynetwork mock-bank-system
+        docker build -f decentralizediso20022/Dockerfile --network=mynetwork
