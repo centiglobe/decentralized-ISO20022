@@ -24,5 +24,5 @@ jobs:
       run: |
         docker-compose -f docker-compose-bank.yml up -d
         docker ps -a
-        docker inspect −−format '{{ .NetworkSettings.IPAddress }}' $(docker ps −q)
+        docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' decentralized-iso20022_mock-bank-system_1
         docker-compose -f docker-compose.yml build
