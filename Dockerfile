@@ -8,7 +8,5 @@ RUN mvn -B -f /app/pom.xml clean package
 
 # Run
 FROM openjdk:11
-ARG STORES_FOLDER=project-stores
 COPY --from=build /app/target/*.jar app.jar
-COPY ${STORES_FOLDER} ${STORES_FOLDER}
 ENTRYPOINT [ "java", "-jar", "/app.jar" ]
