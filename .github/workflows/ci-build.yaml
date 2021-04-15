@@ -21,4 +21,6 @@ jobs:
         git checkout ${{ github.head_ref }}
 
     - name: Build with Maven in Docker
-      run: git update-index --chmod=+x ./demo.sh && ./demo.sh
+      run: |
+        chmod +x ./demo.sh
+        ./demo.sh
