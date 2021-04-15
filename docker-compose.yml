@@ -1,6 +1,7 @@
 version: '3'
 services:
   mock-bank-system:
+    hostname: mock-bank-system
     build:
       context: mock-bank-system
     environment:
@@ -23,3 +24,5 @@ services:
       - server.ssl.trust-store-password=secret
     ports:
       - "8080:8080"
+    depends_on:
+      - mock-bank-system
