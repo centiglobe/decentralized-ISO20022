@@ -5,6 +5,7 @@ services:
       context: .
       args: 
         - STORES_FOLDER=src/main/resources
+        - PROJ_FOLDER=decentralizediso20022
     environment:
       - spring.profiles.active=external
       - server.servlet.context-path=/api

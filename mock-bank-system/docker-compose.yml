@@ -5,6 +5,7 @@ services:
       context: .
       args: 
         - STORES_FOLDER=src/main/resources
+        - PROJ_FOLDER=mock-bank-system
     environment:
       - server.port=4321
     ports:
