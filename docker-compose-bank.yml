@@ -6,3 +6,6 @@ services:
       context: mock-bank-system
     expose:
       - "4321"
+  decentralized-iso20022:
+    build:
+      context: decentralizediso20022
