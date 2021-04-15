@@ -12,6 +12,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        name: cactu5/decentralized-ISO20022-1
 
     - name: Checkout to active branch
       run: |
