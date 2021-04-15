@@ -46,7 +46,7 @@ public class ExtPacsController {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExtPacsController.class);
 
     /**
-     * Validates a pacs message before sending it to the internal financial institution system
+     * Validates a pacs message before sending it to the local financial institution system
      * 
      * @param req The HTTP request that was received along with various attributes from the TLS handshake
      * @param pacs The pacs message to validate and send
@@ -73,6 +73,7 @@ public class ExtPacsController {
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Throwable e) {
+            LOGGER.error("Failed to send message to local financial institution.", e);
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, SEND_FAILURE);
         }
     }
