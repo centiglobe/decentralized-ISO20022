@@ -22,6 +22,6 @@ jobs:
 
     - name: Build with Maven in Docker
       run: |
-        docker build -t mockbanksys mock-bank-system
-        docker run -d -p "4321:4321" --name=mockbanksys mockbanksys
+        docker build -t mockbanksystem mock-bank-system
+        docker run -d -p "4321:4321" --name=mockbanksystem mockbanksystem
         docker build decentralizediso20022
