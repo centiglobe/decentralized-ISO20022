@@ -23,4 +23,5 @@ jobs:
     - name: Build with Maven in Docker
       run: |
         docker-compose -f docker-compose-bank.yml up -d
+        docker ps -a
         docker-compose -f docker-compose.yml build
