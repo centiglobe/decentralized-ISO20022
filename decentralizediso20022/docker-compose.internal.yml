@@ -1,6 +1,6 @@
 version: '3'
 services:
-  decentralized-iso20022-external:
+  decentralized-iso20022-internal:
     build:
       context: .
     ports:

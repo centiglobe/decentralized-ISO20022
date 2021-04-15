@@ -21,8 +21,4 @@ jobs:
         git checkout ${{ github.head_ref }}
 
     - name: Build with Maven in Docker
-      run: |
-        docker network create mynetwork
-        docker build -t mockbanksystem mock-bank-system
-        docker run -d --network=mynetwork --name=mockbanksystem mockbanksystem
-        docker build --network=mynetwork decentralizediso20022
+      run: ./demo.sh
