@@ -1,10 +1,9 @@
 # Build
 FROM maven:3.6.0-jdk-11-slim AS build
 ARG PROJ_FOLDER
-RUN echo ${PROJ_FOLDER}
-COPY ${PROJ_FOLDER}/src /app/src
 WORKDIR /app
-COPY ${PROJ_FOLDER}/pom.xml ${PROJ_FOLDER}/pom.xml
+COPY ${PROJ_FOLDER}/src /app/src
+COPY ${PROJ_FOLDER}/pom.xml /app/pom.xml
 RUN mvn -B -f /app/pom.xml clean package
 
 # Run
