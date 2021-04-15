@@ -21,4 +21,4 @@ jobs:
         git checkout ${{ github.head_ref }}
 
     - name: Build with Maven in Docker
-      run: ls && docker-compose -f docker-compose.yml build
+      run: docker-compose -f docker-compose.yml build
