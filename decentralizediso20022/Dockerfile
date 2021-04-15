@@ -7,5 +7,6 @@ RUN mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMaven
 
 # Run
 FROM openjdk:11
+ARG PROFILE
 COPY --from=build /app/target/*.jar app.jar
 ENTRYPOINT [ "java", "-jar", "-Dspring.profiles.active=${PROFILE}", "/app.jar" ]
