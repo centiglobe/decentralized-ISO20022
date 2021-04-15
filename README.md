@@ -21,12 +21,14 @@ An example use case of the microservice in payments with FX settlements on a dis
 
 ## Build Instructions
 The following instructions describe how to set up the system.
-  1. Run "start.cmd", one internal and one external service will start.
-  2. Open Postman, or any other application that will simulate the bank system.
-  3. In Postman, click "body" and select "raw".
-  4. Copy the contents of `examples/messages/pacs00800109/example1WithHeader.xml`
-     and paste it into the textbox in Postman.
-  5. Select the "POST" method, enter the URL `localhost:8080/api/v1/pacs/` and
-     click "Send".
-  6. If successfull, you should see a message in the external service's command
-     prompt window that shows the pacs.008 message that "was sent to the bank".
+   1. Navigate to `/decentralizediso20022`.
+   3. The environment variables can be customized in the docker-compose files.
+   4. Start docker containers. Start both docker containers the same time with `docker-compose -f docker-compose.external.yml -f docker-compose.internal.yml up --build`
+   5. Or start the desired container with e.g. `docker-compose -f docker-compose.internal.yml up --build`
+## Demo instructions
+The following instructions describe how to demo the system.
+   1. Navigate to `/decentralizediso20022`.
+   3. The environment variables can be customized in the docker-compose files, but for demo purposes the default environment variables are enough.
+   4. Start both docker containers at the same time with `docker-compose -f docker-compose.external.yml -f docker-compose.internal.yml up --build`.
+   5. To make sure the microservices work as intended you can send a post request to `internal`'s pacs endpoint. An example request payload can be found in `examples/demo/docker-demo.xml`. With the default environment variables the request should be sent to: `localhost:8080/api/v1/pacs`.
+   6. If successfull the response should contain `The message was processed.`

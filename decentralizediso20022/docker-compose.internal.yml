@@ -1,0 +1,18 @@
+version: '3'
+services:
+  decentralized-iso20022-internal:
+    build:
+      context: .
+      args: 
+        - STORES_FOLDER=src/main/resources
+    environment:
+      - spring.profiles.active=internal
+      - server.servlet.context-path=/api
+      - server.port=8080
+      - server.ssl.key-store=src/main/resources/keystore.p12
+      - server.ssl.key-store-password=qwerty
+      - server.ssl.enabled=false
+      - server.ssl.trust-store=src/main/resources/truststore.p12
+      - server.ssl.trust-store-password=secret
+    ports:
+      - "8080:8080"

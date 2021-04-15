@@ -1,0 +1,23 @@
+name: Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Checkout to active branch
+      run: |
+        git fetch origin
+        git checkout ${{ github.head_ref }}
+
+    - name: Build with Maven in Docker
+      working-directory: ./decentralizediso20022
+      run: docker-compose -f docker-compose.external.yml -f docker-compose.internal.yml build
