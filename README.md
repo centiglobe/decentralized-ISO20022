@@ -48,7 +48,7 @@ The following instructions describe how to configure the system and integrate it
 	  - `application-external.properties`
          - `server.port`: The TCP port that the external API runs on. If changed and docker is used,
                           `/decentralizediso20022/docker-compose.external.yml` must be updated to match it.
-		 - `bank.system.endpoint`: The full URL of the bank system that valid ISO 20022 messages should be forwarded to by the external API.
+		 - `message.handler.endpoint`: The full URL of the handler that valid ISO 20022 messages should be forwarded to by the external API.
 
 ## Setup
 The following instructions describe how to start up the system after configuring it.

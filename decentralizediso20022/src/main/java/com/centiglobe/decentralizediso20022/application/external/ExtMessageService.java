@@ -21,8 +21,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.Exceptions;
 
 /**
- * A service for sending incoming messages to the local
- * financial institution
+ * A service for sending incoming ISO20022 messages to the financial
+ * institution handler
  *
  * @author William Stackenäs
  */
@@ -30,7 +30,7 @@ import reactor.core.Exceptions;
 @Service
 public class ExtMessageService {
 
-    @Value("${bank.system.endpoint}")
+    @Value("${message.handler.endpoint}")
     private String ENDPOINT;
 
     @Autowired
@@ -43,7 +43,7 @@ public class ExtMessageService {
     private URI bankUri;
 
     /**
-     * Initalizes the URI to the local financial institution
+     * Initalizes the URI to the financial institution handler
      * 
      * @throws URISyntaxException if the configured URI is malformed
      */
@@ -53,18 +53,20 @@ public class ExtMessageService {
     }
     
     /**
-     * Send an ISO 20022 message to the local financial institution
+     * Send an ISO 20022 message to the financial institution handler
      * if it is valid.
      * 
      * @param mx The ISO 20022 message to send
      * @param cert The certificate from the client to validate the message against
-     * @return The HTTP response sent by the local financial institution
+     * @return The HTTP response sent by the financial institution handler
      * 
      * @throws NullPointerException if the given message is null or lacks fields
      * @throws IllegalArgumentException if the given message is not valid. The reason
      *                                  can be obtained via the getMessage method
      * @throws Throwable if sending the message retulted in an erroneous status code
-     *                   or failed for another reason
+     *                   or failed for another reason. Details are purposefully vague
+     *                   to not reveal potentially sensitive information about the
+     *                   financial institution handler
      */
     public ResponseEntity<String> sendIncoming(AbstractMX mx, X509Certificate cert) throws Throwable {
         vs.validateMessage(mx, cert);
