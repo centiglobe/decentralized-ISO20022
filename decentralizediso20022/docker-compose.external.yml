@@ -3,5 +3,7 @@ services:
   decentralized-iso20022-external:
     build:
       context: .
+    environment:
+      - spring.profiles.active=external
     ports:
       - "443:443"
