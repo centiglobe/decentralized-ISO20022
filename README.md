@@ -34,7 +34,7 @@ The following instructions describe how to configure the system and integrate it
    2. Navigate to `/decentralizediso20022/src/main/resources` and replace the template `keystore.p12` and `truststore.p12` with the ones
       from the previous step.
    3. Edit the configuration in the `application.properties` files. Below is a list of the properties that is configurable. Properties
-      not listed here **must not be changed**.
+      not listed here **must not be changed unless you are aware of the risks**.
 	  -  `application.properties`
          - `server.ssl.key-store`: The path to your keystore. This field should always be `/src/main/resources/<keystore-filename>`.
          - `server.ssl.key-store-password`: The password of your keystore.
