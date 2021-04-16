@@ -23,7 +23,7 @@ import org.springframework.web.reactive.function.client.WebClientRequestExceptio
 import org.springframework.web.server.ResponseStatusException;
 
 /**
- * A controller for handling internal pacs messages
+ * A controller for handling outgoing pacs messages
  * 
  * @author William Stackenäs
  * @author Cactu5
@@ -52,7 +52,7 @@ public class IntPacsController {
     private static final Logger LOGGER = LoggerFactory.getLogger(IntPacsController.class);
 
     /**
-     * Validates an incomming pacs message before sending it to the recipient
+     * Validates a pacs message before sending it to the recipient
      * financial institution
      * 
      * @param pacs The pacs message to validate and send
@@ -60,10 +60,10 @@ public class IntPacsController {
      */
     @PostMapping("")
     public ResponseEntity<String> handlePacs(@RequestBody String pacs) throws Throwable {
-        LOGGER.info("Internal cotroller handling pacs message.");
+        LOGGER.info("Internal controller handling pacs message.");
         MxPacs00800109 mxPacs = MxPacs00800109.parse(pacs);
         try {
-            return msgService.send(mxPacs);
+            return msgService.sendOutgoing(mxPacs);
         } catch (NullPointerException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, BAD_PACS);
         } catch (IllegalArgumentException e) {
@@ -76,6 +76,7 @@ public class IntPacsController {
                 }
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, BAD_EXTERNAL_CERT);
             }
+            LOGGER.error("Failed to send message to remote financial institution.", e);
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, SEND_FAILURE);
         }
     }

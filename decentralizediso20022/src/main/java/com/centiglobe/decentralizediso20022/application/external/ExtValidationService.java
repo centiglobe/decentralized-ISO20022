@@ -6,7 +6,6 @@ import com.centiglobe.decentralizediso20022.application.ValidationService;
 import com.prowidesoftware.swift.model.mx.AbstractMX;
 import com.prowidesoftware.swift.model.mx.BusinessAppHdrV02;
 
-import org.cryptacular.util.CertUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -15,7 +14,7 @@ import org.springframework.stereotype.Service;
  * A Validation service used for validating incomming ISO 20022 messages
  * 
  * @author Cactu5
- * @author William
+ * @author William Stackenäs
  */
 @Profile("external")
 @Service
@@ -30,12 +29,14 @@ public class ExtValidationService extends ValidationService {
     /**
      * Validates the ISO 20022 message. Also validates the message against
      * a given certificate
-     * 
+     *
      * @param mx The message to validate
      * @param cert The certificate to validate the message against
+     *
      * @throws NullPointerException if the given message is null or lacks fields, or if
      *                              the certificate is null
-     * @throws IllegalArgumentException if the given message is not valid
+     * @throws IllegalArgumentException if the given message is not valid. The reason
+     *                                  can be obtained via the getMessage method
      */
     public void validateMessage(AbstractMX mx, X509Certificate cert) throws IllegalArgumentException, NullPointerException {
         if (cert == null)
@@ -44,26 +45,25 @@ public class ExtValidationService extends ValidationService {
     }
 
     /**
-     * Validates that the domain nested in the To element is equal to the common name
-     * of the local certificate. Also validates the From element against a
-     * given certificate's common name
-     * 
+     * Validates that the domain nested in the To element is contained in the subject
+     * alternative names of the local certificate. Also validates the From element against a
+     * given certificate's subject alternative names
+     *
      * @param header The header to validate
      * @param cert The certificate to validate the From element against
+     *
      * @throws NullPointerException if the given message is null or lacks fields
-     * @throws IllegalArgumentException if the given message is not valid
+     * @throws IllegalArgumentException if the given message is not valid. The reason
+     *                                  can be obtained via the getMessage method
      */
     public void validateHeader(BusinessAppHdrV02 header, X509Certificate cert) throws IllegalArgumentException, NullPointerException {
         String toDomain = header.getTo().getFIId().getFinInstnId().getNm();
-        String ourCommonName = CertUtil.subjectCN(us);
-
-        if (!toDomain.equals(ourCommonName))
-            throw new IllegalArgumentException(String.format(BAD_TO_HEADER, toDomain, ourCommonName));
-
         String fromDomain = header.getFr().getFIId().getFinInstnId().getNm();
-        String theirCommonName = CertUtil.subjectCN(cert);
 
-        if (!fromDomain.equals(theirCommonName))
-            throw new IllegalArgumentException(String.format(BAD_FROM_HEADER, fromDomain, theirCommonName));
+        if (!hasSubjectAltName(us, toDomain))
+            throw new IllegalArgumentException(String.format(BAD_TO_HEADER, toDomain));
+
+        if (!hasSubjectAltName(cert, fromDomain))
+            throw new IllegalArgumentException(String.format(BAD_FROM_HEADER, fromDomain));
     }
 }

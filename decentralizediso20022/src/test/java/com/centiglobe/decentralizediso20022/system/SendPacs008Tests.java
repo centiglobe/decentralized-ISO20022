@@ -38,7 +38,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.reactive.function.client.WebClient;
 
 /**
@@ -48,7 +47,6 @@ import org.springframework.web.reactive.function.client.WebClient;
  * @author William Stackenäs
  */
 @SpringBootTest
-@ActiveProfiles("test")
 public class SendPacs008Tests {
 
     @Value("${server.servlet.context-path}")
@@ -84,19 +82,16 @@ public class SendPacs008Tests {
     @Value("${message.external-send-failure}")
     private String EXT_SEND_FAILURE;
 
-    @Value("${message.ok}")
-    private String OK;
-
     @Value("${server.ssl.key-store}")
     private String KEY_STORE;
 
     @Value("${server.ssl.key-store-password}")
     private String KEY_PASS;
 
-    @Value("${server.ssl.test-trust-store}")
+    @Value("${server.ssl.trust-store}")
     private String TRUST_STORE;
 
-    @Value("${server.ssl.test-trust-store-password}")
+    @Value("${server.ssl.trust-store-password}")
     private String TRUST_PASS;
 
     @Autowired
@@ -118,7 +113,7 @@ public class SendPacs008Tests {
 
     @Test
     void sendPacsTest() throws Exception {
-        validateResponse(sendPost(String.format(mx, "localhost", "localhost")), HttpStatus.OK, OK);
+        validateResponse(sendPost(String.format(mx, "localhost", "localhost")), HttpStatus.OK, "pacs.002");
     }
 
     @Test
@@ -141,12 +136,17 @@ public class SendPacs008Tests {
     @Test
     void sendInvalidFromTest() throws Exception {
         validateResponse(sendPost(String.format(mx, "self-signed.badssl.com", "localhost")), HttpStatus.BAD_REQUEST,
-                String.format(BAD_FROM_HEADER, "self-signed.badssl.com", "localhost"));
+                String.format(BAD_FROM_HEADER, "self-signed.badssl.com"));
     }
 
     @Test
     void sendEmptyTest() throws Exception {
         validateResponse(sendPost(""), HttpStatus.BAD_REQUEST, EMPTY_MSG);
+    }
+
+    @Test
+    void sendToExternalEmptyTest() throws Exception {
+        validateResponse(sendPost("", new URL("https://localhost:443/api/v1/pacs"), true, true), HttpStatus.BAD_REQUEST, EMPTY_MSG);
     }
 
     @Test
@@ -179,7 +179,7 @@ public class SendPacs008Tests {
         validateResponse(
             sendPost(String.format(mx, "localhost", "localhost"), new URL("https://localhost:443/api/v1/pacs"), true, true),
             HttpStatus.OK,
-            OK
+            "pacs.002"
         );
     }
 
@@ -188,7 +188,7 @@ public class SendPacs008Tests {
         validateResponse(
             sendPost(String.format(mx, "localhost", "self-signed.badssl.com"), new URL("https://localhost:443/api/v1/pacs"), true, true),
             HttpStatus.BAD_REQUEST,
-            String.format(BAD_TO_HEADER, "self-signed.badssl.com", "localhost")
+            String.format(BAD_TO_HEADER, "self-signed.badssl.com")
         );
     }
 
@@ -197,7 +197,7 @@ public class SendPacs008Tests {
         validateResponse(
             sendPost(String.format(mx, "self-signed.badssl.com", "localhost"), new URL("https://localhost:443/api/v1/pacs"), true, true),
             HttpStatus.BAD_REQUEST,
-            String.format(BAD_FROM_HEADER, "self-signed.badssl.com", "localhost")
+            String.format(BAD_FROM_HEADER, "self-signed.badssl.com")
         );
     }
 
@@ -231,6 +231,7 @@ public class SendPacs008Tests {
     }
 
     // TODO: Is it possible to test the EXT_SEND_FAILURE error or the BAD_INTERNAL_CERT error?
+    // So far they have only been tested manually
 
     private void validateResponse(ResponseEntity<String> resp, HttpStatus expectedStatus) {
         validateResponse(resp, expectedStatus, null);
@@ -238,7 +239,7 @@ public class SendPacs008Tests {
 
     private void validateResponse(ResponseEntity<String> resp, HttpStatus expectedStatus, String expectedMsg) {
         assertEquals(expectedStatus, resp.getStatusCode());
-        assertEquals(resp.getHeaders().getContentType(), MediaType.APPLICATION_XML);
+        assertEquals(MediaType.APPLICATION_XML, resp.getHeaders().getContentType());
         String body = resp.getBody().toString();
         if (expectedMsg != null)
             assertTrue(body.contains(expectedMsg), body + "\n\nDid not contain\n\n" + expectedMsg + "\n");

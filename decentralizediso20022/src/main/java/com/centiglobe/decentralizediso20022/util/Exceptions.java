@@ -10,7 +10,7 @@ public class Exceptions {
     /**
      * Obtains a cause {@link Throwable} of a given class of the given {@link Throwable}
      * 
-     * @param e The {@link Throwable} to obt ain the root cause from
+     * @param e The {@link Throwable} to obtain the root cause from
      * @param cause The class of the cause throwable to obtain
      * 
      * @return The {@link Throwable} cause of the given class if it exists,

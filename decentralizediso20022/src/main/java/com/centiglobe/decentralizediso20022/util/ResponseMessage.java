@@ -80,7 +80,7 @@ public class ResponseMessage {
             transformer.transform(new DOMSource(doc), new StreamResult(writer));
             return ResponseEntity.status(status).contentType(MediaType.APPLICATION_XML).body(writer.getBuffer().toString());
         } catch (Exception e) {
-            // TODO: Send something more descriptive than an empty body
+            // TODO: Potentially send something more descriptive than an empty body
             return ResponseEntity.status(status).body("");
         }
     }

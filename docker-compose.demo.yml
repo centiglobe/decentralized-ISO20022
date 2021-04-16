@@ -1,0 +1,25 @@
+version: '3'
+services:
+  mockbanksystem:
+    build:
+      context: mock-bank-system
+    ports:
+      - "4321:4321"
+  decentralized-iso20022-internal:
+    build:
+      context: decentralizediso20022
+      args:
+        - STORES_FOLDER=src/main/resources
+    environment:
+      - spring.profiles.active=internal
+    ports:
+      - "8080:8080"
+  decentralized-iso20022-external:
+    build:
+      context: decentralizediso20022
+      args:
+        - STORES_FOLDER=src/main/resources
+    environment:
+      - spring.profiles.active=external
+    ports:
+      - "443:443"

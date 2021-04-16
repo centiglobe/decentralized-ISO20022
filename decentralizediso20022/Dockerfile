@@ -1,9 +1,9 @@
 # Build
 FROM maven:3.6.0-jdk-11-slim AS build
-COPY src /app/src
 WORKDIR /app
-COPY pom.xml pom.xml
-RUN mvn -f /app/pom.xml clean package
+COPY src /app/src
+COPY pom.xml /app/pom.xml
+RUN mvn -B -Dmaven.test.skip=true -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn -f /app/pom.xml clean package
 
 # Run
 FROM openjdk:11

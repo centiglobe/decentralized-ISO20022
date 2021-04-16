@@ -33,7 +33,7 @@ import java.security.cert.CertificateException;
  * The configuration class for the project.
  * 
  * @author Cactu5
- * @author William Stacknäs
+ * @author William Stackenäs
  */
 @Configuration
 @ComponentScan({ "com.centiglobe.decentralizediso20022" })

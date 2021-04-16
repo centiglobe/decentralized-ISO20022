@@ -12,6 +12,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        repository: cactu5/decentralized-ISO20022-1
 
     - name: Checkout to active branch
       run: |
@@ -19,5 +21,8 @@ jobs:
         git checkout ${{ github.head_ref }}
 
     - name: Build with Maven in Docker
-      working-directory: ./decentralizediso20022
-      run: docker-compose -f docker-compose.external.yml -f docker-compose.internal.yml build
+      run: |
+        docker network create mynetwork
+        docker build -t mockbanksystem mock-bank-system
+        docker run -d --network=mynetwork --name=mockbanksystem mockbanksystem
+        docker build --network=mynetwork -t decentralizediso20022 -f decentralizediso20022/Dockerfile-ci decentralizediso20022

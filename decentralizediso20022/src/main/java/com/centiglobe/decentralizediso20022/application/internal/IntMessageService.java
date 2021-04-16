@@ -24,9 +24,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * A service for sending messages
+ * A service for sending outgoing messages to another
+ * financial institution
  * 
- * @author William Stacknäs
+ * @author William Stackenäs
  * @author Cactu5
  */
 @Profile("internal")
@@ -65,12 +66,13 @@ public class IntMessageService {
      * @return The HTTP response sent by the recipent host
      *
      * @throws NullPointerException if the given message is null or lacks fields
-     * @throws IllegalArgumentException if the given message is not valid
+     * @throws IllegalArgumentException if the given message is not valid. The reason
+     *                                  can be obtained via the getMessage method
      * @throws WebClientRequestException if, for example, a secure TLS session could not be
      *                                   established with the recipient
      * @throws Throwable if sending the message failed
      */
-    public ResponseEntity<String> send(AbstractMX mx) throws Throwable {
+    public ResponseEntity<String> sendOutgoing(AbstractMX mx) throws Throwable {
         vs.validateMessage(mx, null);
         
         URI uri = endpointOf(mx);
