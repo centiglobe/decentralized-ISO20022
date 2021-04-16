@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        repository: cactu5/decentralized-ISO20022-1
+        repository: centiglobe/decentralized-ISO20022
 
     - name: Checkout to active branch
       run: |
