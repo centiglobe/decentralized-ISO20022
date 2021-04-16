@@ -63,7 +63,7 @@ public class ExtPacsController {
             // unless Spring fails to provide the certificate from the handshake as an attribute somehow.
             throw new SSLException("The TLS certificate from the handshake was unavailable.");
         }
-        LOGGER.info("External cotroller handling pacs message with cert " + certs[0].getSubjectX500Principal());
+        LOGGER.info("External controller handling pacs message with cert " + certs[0].getSubjectX500Principal());
 
         mxPacs = MxPacs00800109.parse(pacs);
         try {

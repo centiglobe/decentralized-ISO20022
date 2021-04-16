@@ -60,7 +60,7 @@ public class IntPacsController {
      */
     @PostMapping("")
     public ResponseEntity<String> handlePacs(@RequestBody String pacs) throws Throwable {
-        LOGGER.info("Internal cotroller handling pacs message.");
+        LOGGER.info("Internal controller handling pacs message.");
         MxPacs00800109 mxPacs = MxPacs00800109.parse(pacs);
         try {
             return msgService.sendOutgoing(mxPacs);
@@ -76,6 +76,7 @@ public class IntPacsController {
                 }
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, BAD_EXTERNAL_CERT);
             }
+            LOGGER.error("Failed to send message to remote financial institution.", e);
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, SEND_FAILURE);
         }
     }
