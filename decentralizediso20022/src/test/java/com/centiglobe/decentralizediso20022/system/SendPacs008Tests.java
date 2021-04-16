@@ -136,7 +136,7 @@ public class SendPacs008Tests {
     @Test
     void sendInvalidFromTest() throws Exception {
         validateResponse(sendPost(String.format(mx, "self-signed.badssl.com", "localhost")), HttpStatus.BAD_REQUEST,
-                String.format(BAD_FROM_HEADER, "self-signed.badssl.com", "localhost"));
+                String.format(BAD_FROM_HEADER, "self-signed.badssl.com"));
     }
 
     @Test
@@ -188,7 +188,7 @@ public class SendPacs008Tests {
         validateResponse(
             sendPost(String.format(mx, "localhost", "self-signed.badssl.com"), new URL("https://localhost:443/api/v1/pacs"), true, true),
             HttpStatus.BAD_REQUEST,
-            String.format(BAD_TO_HEADER, "self-signed.badssl.com", "localhost")
+            String.format(BAD_TO_HEADER, "self-signed.badssl.com")
         );
     }
 
@@ -197,7 +197,7 @@ public class SendPacs008Tests {
         validateResponse(
             sendPost(String.format(mx, "self-signed.badssl.com", "localhost"), new URL("https://localhost:443/api/v1/pacs"), true, true),
             HttpStatus.BAD_REQUEST,
-            String.format(BAD_FROM_HEADER, "self-signed.badssl.com", "localhost")
+            String.format(BAD_FROM_HEADER, "self-signed.badssl.com")
         );
     }
 

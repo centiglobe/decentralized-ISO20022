@@ -6,6 +6,8 @@ import java.security.cert.X509Certificate;
 
 import javax.annotation.PostConstruct;
 
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.cryptacular.util.CertUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -38,5 +40,15 @@ public class ValidationService {
     public void initCertificate() throws Exception {
         KeyStore keyStore = KeyStore.getInstance(new File(KEY_STORE), KEY_PASS.toCharArray());
         us = (X509Certificate) keyStore.getCertificate(KEY_ALIAS);
+    }
+
+    protected boolean hasSubjectAltName(X509Certificate cert, String san) {
+        GeneralName[] names = CertUtil.subjectAltNames(cert).getNames();
+        for (GeneralName n : names) {
+            if (n.getName().toString().equals(san)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

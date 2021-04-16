@@ -6,7 +6,6 @@ import com.centiglobe.decentralizediso20022.application.ValidationService;
 import com.prowidesoftware.swift.model.mx.AbstractMX;
 import com.prowidesoftware.swift.model.mx.BusinessAppHdrV02;
 
-import org.cryptacular.util.CertUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -46,9 +45,9 @@ public class ExtValidationService extends ValidationService {
     }
 
     /**
-     * Validates that the domain nested in the To element is equal to the common name
-     * of the local certificate. Also validates the From element against a
-     * given certificate's common name
+     * Validates that the domain nested in the To element is contained in the subject
+     * alternative names of the local certificate. Also validates the From element against a
+     * given certificate's subject alternative names
      *
      * @param header The header to validate
      * @param cert The certificate to validate the From element against
@@ -59,14 +58,12 @@ public class ExtValidationService extends ValidationService {
      */
     public void validateHeader(BusinessAppHdrV02 header, X509Certificate cert) throws IllegalArgumentException, NullPointerException {
         String toDomain = header.getTo().getFIId().getFinInstnId().getNm();
-        String ourCommonName = CertUtil.subjectCN(us);
         String fromDomain = header.getFr().getFIId().getFinInstnId().getNm();
-        String theirCommonName = CertUtil.subjectCN(cert);
 
-        if (!toDomain.equals(ourCommonName))
-            throw new IllegalArgumentException(String.format(BAD_TO_HEADER, toDomain, ourCommonName));
+        if (!hasSubjectAltName(us, toDomain))
+            throw new IllegalArgumentException(String.format(BAD_TO_HEADER, toDomain));
 
-        if (!fromDomain.equals(theirCommonName))
-            throw new IllegalArgumentException(String.format(BAD_FROM_HEADER, fromDomain, theirCommonName));
+        if (!hasSubjectAltName(cert, fromDomain))
+            throw new IllegalArgumentException(String.format(BAD_FROM_HEADER, fromDomain));
     }
 }
