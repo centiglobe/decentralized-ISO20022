@@ -8,6 +8,8 @@ services:
   decentralizediso20022internal:
     build:
       context: decentralizediso20022
+      args:
+        - STORES_FOLDER=src/main/resources
     environment:
       - spring.profiles.active=internal
     ports:
@@ -15,6 +17,8 @@ services:
   decentralizediso20022external:
     build:
       context: decentralizediso20022
+      args:
+        - STORES_FOLDER=src/main/resources
     environment:
       - spring.profiles.active=external
     ports:
