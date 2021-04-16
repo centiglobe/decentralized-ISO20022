@@ -5,7 +5,7 @@ services:
       context: mock-bank-system
     ports:
       - "4321:4321"
-  decentralizediso20022internal:
+  decentralized-iso20022-internal:
     build:
       context: decentralizediso20022
       args:
@@ -14,7 +14,7 @@ services:
       - spring.profiles.active=internal
     ports:
       - "8080:8080"
-  decentralizediso20022external:
+  decentralized-iso20022-external:
     build:
       context: decentralizediso20022
       args:
