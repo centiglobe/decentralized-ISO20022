@@ -1,5 +1,5 @@
-# Decentralized ISO20022 microservice
-Financial Inclusion with decentralized ISO20022 as a bidirectional microservice. It consists of two components, the internal API and the external API.
+# Decentralized ISO20022 communication service
+Financial Inclusion with decentralized ISO20022 as a bidirectional communication service. It consists of two components, the internal API and the external API.
 The internal API should be kept private and only accessible by your own financial institution, which could be done using for example a
 VPN or a firewall. Its purpose is to validate outgoing ISO 20022 messages before they are sent to a remote financial institution. The external API is
 publicly available for remote financial institutions and can accept and validate incoming ISO 20022 messages before forwarding them
@@ -14,7 +14,7 @@ to an internal handler service.
  - [6. How To Use](#6-how-to-use)
    - [6.1. Endpoints](#61-endpoints)
    - [6.2. Certificates](#62-certificates)
-   - [6.3. Sending Messages](#63-sending-messsages)
+   - [6.3. Sending Messages](#63-sending-messages)
    - [6.4. Receiving Messages](#64-receiving-messages)
    - [6.5. Configuration](#65-configuration)
  - [7. Setup](#7-setup)
@@ -29,12 +29,12 @@ An overview of the system, using VPNs to protect the internal APIs.
 ![Image of the system overview](images/system-overview.png)
 
 ## 2. Sequence diagram
-A sequence diagram for sending and receiving a pacs.008 message with the microservice. !!!!!!!!!!!!!!!!!!!!!!!Communication service represents an instance of the microservice.!!!!!!!!!!!!!!!!!!!!!!!!!!
+A sequence diagram for sending and receiving a pacs.008 message with the communication service.
 
 ![Image of a sequence diagram for sending and receiving a pacs.008 message](images/sequence-diagram-01.png)
 
 ## 3. Use In Settlement And Payments
-An example use case of the microservice in payments with FX settlements on a distributed ledger, and the different ISO20022 messages that can be used for communication.
+An example use case of the communication service in payments with FX settlements on a distributed ledger, and the different ISO20022 messages that can be used for communication.
 ![Image of a sequence diagram in a settlement and payments use case](images/sequence-diagram-02.png)
 
 ## 4. Technologies
@@ -44,16 +44,16 @@ The technologies used in the project.
 
 ## 5. Demo
 The following instructions describe how to run a demo of the system using a mock financial institution handler (mock bank system) and the default configuration.
-   1. Start the microservice and mock bank system by running `docker-compose -f docker-compose.demo.yml up --build`.
+   1. Start the communication service and mock bank system by running `docker-compose -f docker-compose.demo.yml up --build`.
    2. Send a post request to `http://localhost:8080/api/v1/pacs` containing a `pacs.008` message in the message body.
       An example request payload can be found in `examples/demo/docker-demo.xml`.
    3. If successful the response should contain a `pacs.002` message, otherwise an error message explaining what went wrong.
 
 ## 6. How To Use
-This section explains how to use the microservice.
+This section explains how to use the communication service.
 
 ### 6.1 Endpoints
-The microservice's internal and external APIs are RESTful and have the following URI structure.
+The communication service's internal and external APIs are RESTful and have the following URI structure.
 ```
 /api/v1/<BUSINESS-PROCESS>
 ```
@@ -62,8 +62,8 @@ HTTP requests. At the moment, only `pacs` is supported. Fore more details, see t
 folder.
 
 ### 6.2 Certificates
-The microservice uses both TLS client and server certificates for authentication. This means that the financial institutions that
-wish to communicate with each other using the microservice must add the other party's certificate into their truststore. When
+The communication service uses both TLS client and server certificates for authentication. This means that the financial institutions that
+wish to communicate with each other using the communication service must add the other party's certificate into their truststore. When
 adding a certificate to your truststore, make sure that you **trust it and all certificates that are signed by it to exchange payments
 with your financial institution**. It is recommended that each financial institution uses a self-signed certificate, and that each financial
 institution stores the self-signed certificate of each financial institution that they trust in their truststore. Trusting root certificate CAs
@@ -100,7 +100,7 @@ This message header should contain the hostnames of the sender and the recipient
 <!--ISO 20022 message here...-->
 ```
 The `Fr` tag must contain the hostname of your financial institution. Specifically, it must be a subject alternative name of your
-personal X.509 certificate. The `To` tag will be used by the microservice to determine the financial institution the message should
+personal X.509 certificate. The `To` tag will be used by the communication service to determine the financial institution the message should
 be sent to. The port numbers of both the sending and receiving financial institution's external APIs can optionally be specified, but
 if they are not present they are assumed to be located on port 443.
 
@@ -122,7 +122,7 @@ external APIs, see the [OpenAPI description](OpenAPI/decentralized-iso20022-v1.y
 ### 6.4 Receiving Messages
 The external API which receives messages from other financial institutions will only validate the messages it receives, it will not "act"
 upon them. Therefore, after it has validated a message, it will expect that a "financial institution handler" will act upon it.
-The URI of this handler must be specified in `application-external.properties` in accordance with [6.4. Configuration](#64-configuration).
+The URI of this handler must be specified in `application-external.properties` in accordance with [6.5. Configuration](#65-configuration).
 
 ### 6.5 Configuration
 The following instructions describe how to configure the system and integrate it into an existing bank system.
@@ -165,7 +165,7 @@ internal API and run `mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=extern
 in a separate command prompt window to start the external API.
 
 ### 7.3 Using Docker
-Start the microservice by running `docker-compose -f docker-compose.external.yml -f docker-compose.internal.yml up --build`
+Start the communication service by running `docker-compose -f docker-compose.external.yml -f docker-compose.internal.yml up --build`
 
 ## 8. Software Architecture
 An architecture of the software, which follows domain driven design.
