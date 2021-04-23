@@ -12,7 +12,7 @@
 	<artifactId>mock-bank-system</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>mock-bank-system</name>
-	<description>A mock bank system used to integrate the decentralized ISO 20022 microservice</description>
+	<description>A mock bank system used to integrate the decentralized ISO 20022 communication service</description>
 	<properties>
 		<java.version>11</java.version>
 	</properties>

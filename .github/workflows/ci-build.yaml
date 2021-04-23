@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        repository: centiglobe/decentralized-ISO20022
+        repository: ${{ github.repository }}
 
     - name: Checkout to active branch
       run: |
