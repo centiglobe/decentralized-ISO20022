@@ -1,25 +1,81 @@
 package com.centiglobe.decentralizediso20022.application.external;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.cert.X509Certificate;
+
+import javax.annotation.PostConstruct;
+
 import com.prowidesoftware.swift.model.mx.AbstractMX;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import reactor.core.Exceptions;
+
+/**
+ * A service for sending incoming ISO20022 messages to the financial
+ * institution handler
+ *
+ * @author William Stackenäs
+ */
 @Profile("external")
 @Service
 public class ExtMessageService {
-    
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExtMessageService.class);
+
+    @Value("${message.handler.endpoint}")
+    private String ENDPOINT;
+
+    @Autowired
+    @Qualifier("secureWebClient")
+    public WebClient.Builder webClientBuilder;
+
+    @Autowired
+    private ExtValidationService vs;
+
+    private URI bankUri;
+
+    /**
+     * Initalizes the URI to the financial institution handler
+     * 
+     * @throws URISyntaxException if the configured URI is malformed
+     */
+    @PostConstruct
+    public void initBankEndpoint() throws URISyntaxException {
+        bankUri = new URI(ENDPOINT);
+    }
     
     /**
-     * Sends an ISO 20022 message using to the private bank system
+     * Send an ISO 20022 message to the financial institution handler
+     * if it is valid.
      * 
      * @param mx The ISO 20022 message to send
+     * @param cert The certificate from the client to validate the message against
+     * @return The HTTP response sent by the financial institution handler
+     * 
+     * @throws NullPointerException if the given message is null or lacks fields
+     * @throws IllegalArgumentException if the given message is not valid. The reason
+     *                                  can be obtained via the getMessage method
+     * @throws Throwable if sending the message retulted in an erroneous status code
+     *                   or failed for another reason. Details are purposefully vague
+     *                   to not reveal potentially sensitive information about the
+     *                   financial institution handler
      */
-    public void send(AbstractMX mx) throws Exception {
-        // TODO: Send message to financial institution using configured endpoint
-        LOGGER.info("The following ISO 20022 message was sent to the Bank:\n" + mx.message());
+    public ResponseEntity<String> sendIncoming(AbstractMX mx, X509Certificate cert) throws Throwable {
+        vs.validateMessage(mx, cert);
+        try {
+            return webClientBuilder
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE).build().post().uri(bankUri)
+                .bodyValue(mx.message()).retrieve().toEntity(String.class).block();
+        } catch (Exception e) {
+            throw Exceptions.unwrap(e);
+        }
     }
 }

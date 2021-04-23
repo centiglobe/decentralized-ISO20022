@@ -4,26 +4,32 @@ import com.prowidesoftware.swift.model.mx.AbstractMX;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import reactor.core.Exceptions;
+import reactor.core.publisher.Mono;
 
 import com.prowidesoftware.swift.model.mx.BusinessAppHdrV02;
 
-import static com.centiglobe.decentralizediso20022.util.HTTPSCustomTruststore.configureTruststore;
+import java.net.URI;
+import java.net.URISyntaxException;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.List;
-import java.util.Map;
-
-import javax.net.ssl.HttpsURLConnection;
-
+/**
+ * A service for sending outgoing messages to another
+ * financial institution
+ * 
+ * @author William Stackenäs
+ * @author Cactu5
+ */
 @Profile("internal")
 @Service
 public class IntMessageService {
@@ -39,56 +45,81 @@ public class IntMessageService {
     @Value("${server.ssl.trust-store-password}")
     private String TRUST_PASS;
 
-    @Value("${recipient.port}")
-    private String PORT;
+    @Value("${message.bad-recipient}")
+    private String BAD_RECIPIENT;
+
+    @Value("${message.bad-recipient-uri}")
+    private String BAD_URI;
+
+    @Autowired
+    @Qualifier("secureWebClient")
+    public WebClient.Builder webClientBuilder;
+
+    @Autowired
+    private IntValidationService vs;
 
     /**
-     * Sends an ISO 20022 message using HTTPS to its dedicated endpoint at the recipent host
-     * 
+     * Sends an ISO 20022 message, if it is valid, using HTTPS to its dedicated endpoint at the
+     * recipent host and returns the response returned, regardless of its status
+     *
      * @param mx The ISO 20022 message to send
      * @return The HTTP response sent by the recipent host
-     * @throws Exception If sending the message failed
+     *
+     * @throws NullPointerException if the given message is null or lacks fields
+     * @throws IllegalArgumentException if the given message is not valid. The reason
+     *                                  can be obtained via the getMessage method
+     * @throws WebClientRequestException if, for example, a secure TLS session could not be
+     *                                   established with the recipient
+     * @throws Throwable if sending the message failed
      */
-    public ResponseEntity send(AbstractMX mx) throws Exception {
-        String host = ((BusinessAppHdrV02)mx.getAppHdr()).getTo().getFIId().getFinInstnId().getNm();
-        byte[] encoded = mx.message().getBytes("utf-8");
-
-        URL url = new URL("https://" + host + ":" + PORT + endpointOf(mx));
-
-        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-        conn.setRequestMethod("POST");
-        configureTruststore(conn, TRUST_STORE, TRUST_PASS);
-        conn.setDoOutput(true);
-        conn.setRequestProperty("Content-Length", "" + encoded.length);
-        conn.getOutputStream().write(encoded);
-
-        return getHttpsResponse(conn);
-    }
-
-    private ResponseEntity getHttpsResponse(HttpsURLConnection con) throws IOException {
-        InputStream reader = hasErrorResponse(con) ? con.getErrorStream() : con.getInputStream();
-        BufferedReader in = new BufferedReader(new InputStreamReader(reader, "utf-8"));
-        StringBuilder respReader = new StringBuilder();
-        String row;
-        while ((row = in.readLine()) != null) {
-            respReader.append(row + "\n");
+    public ResponseEntity<String> sendOutgoing(AbstractMX mx) throws Throwable {
+        vs.validateMessage(mx, null);
+        
+        URI uri = endpointOf(mx);
+        try {
+            return webClientBuilder
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE).build().post().uri(uri)
+                .bodyValue(mx.message()).retrieve().onStatus(HttpStatus::isError, (resp -> {
+                    if (resp.statusCode().is4xxClientError()) {
+                        // If the response is a 4xx error, it means the internal component mistakenly
+                        // validated the message. (Or the external component mistakenly flagged it)
+                        LOGGER.error("Received a " + resp.statusCode() + " status from the recipient.");
+                    } else {
+                        LOGGER.debug("Received a " + resp.statusCode() + " status from the recipient.");
+                    }
+                    return Mono.empty();
+                })).toEntity(String.class).block();
+        } catch (Exception e) {
+            throw Exceptions.unwrap(e);
         }
-        HttpHeaders headers = new HttpHeaders();
-        Map<String, List<String>> conHeaders = con.getHeaderFields();
-        for (String header : conHeaders.keySet()) {
-            if (header != null) {
-                headers.add(header, conHeaders.get(header).get(0));
-            }
+    }
+
+    /**
+     * Obtains the URI endpoint that the given ISO 20022 message should be sent to
+     * It is based on the {@link BusinessAppHdrV02}'s' To element and the message type
+     * 
+     * @param mx The message whose URI endpoint should be obtained
+     * 
+     * @return The URI that the message should be sent to
+     * @throws IllegalArgumentException if the full URI was malformed
+     */
+    private URI endpointOf(AbstractMX mx) {
+        String host = "[blank]";
+        String to;
+        String uri = null;
+        try {
+            to = ((BusinessAppHdrV02) mx.getAppHdr()).getTo().getFIId().getFinInstnId().getNm();
+            if (to.isBlank())
+                throw new Exception("Blank hostname");
+            host = to;
+            uri = "https://" + host + CONTEXT_PATH + "/v1/" + mx.getBusinessProcess();
+            return new URI(uri);
+        } catch (URISyntaxException e) {
+            LOGGER.error(String.format(BAD_URI, uri));
+            throw new IllegalArgumentException(String.format(BAD_URI, uri));
+        } catch (Exception e) {
+            LOGGER.error(String.format(BAD_RECIPIENT, host));
+            throw new IllegalArgumentException(String.format(BAD_RECIPIENT, host));
         }
-        String body = respReader.toString();
-        return ResponseEntity.status(con.getResponseCode()).headers(headers).body(body);
-    }
-
-    private boolean hasErrorResponse(HttpsURLConnection con) throws IOException {
-        return con.getResponseCode() > 299;
-    }
-
-    private String endpointOf(AbstractMX mx) {
-        return CONTEXT_PATH + "/v1/" + mx.getBusinessProcess() + "/";
     }
 }

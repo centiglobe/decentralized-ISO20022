@@ -2,11 +2,12 @@ package com.centiglobe.decentralizediso20022.presentation.internal;
 
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLHandshakeException;
+
 import com.centiglobe.decentralizediso20022.annotation.ApiVersion;
-import com.centiglobe.decentralizediso20022.application.ValidationService;
 import com.centiglobe.decentralizediso20022.application.internal.IntMessageService;
-import com.prowidesoftware.swift.model.mx.AbstractMX;
-import com.prowidesoftware.swift.model.mx.BusinessAppHdrV02;
+import com.centiglobe.decentralizediso20022.util.Exceptions;
+import com.prowidesoftware.swift.model.mx.MxPacs00800109;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +19,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
- * A controller for handling internal pacs messages
+ * A controller for handling outgoing pacs messages
  * 
  * @author William Stackenäs
+ * @author Cactu5
  */
 @RestController
 @Profile("internal")
@@ -32,39 +34,50 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("pacs")
 public class IntPacsController {
 
-    @Value("${recipient.port}")
-    private String PORT;
+    @Value("${message.bad-pacs}")
+    private String BAD_PACS;
+
+    @Value("${message.bad-internal-cert}")
+    private String BAD_INTERNAL_CERT;
+
+    @Value("${message.bad-external-cert}")
+    private String BAD_EXTERNAL_CERT;
+
+    @Value("${message.internal-send-failure}")
+    private String SEND_FAILURE;
 
     @Autowired
     private IntMessageService msgService;
 
-    @Autowired
-    private ValidationService vs;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(IntPacsController.class);
 
-    @PostMapping("/")
-    public ResponseEntity handlePacs(@RequestBody String pacs) {
-        LOGGER.info("Internal cotroller handling pacs message.");
-        AbstractMX mx = AbstractMX.parse(pacs);
-        if (mx == null || !mx.getBusinessProcess().equals("pacs"))
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The entity was not a valid pacs message.");
-
-        BusinessAppHdrV02 header = (BusinessAppHdrV02) mx.getAppHdr();
+    /**
+     * Validates a pacs message before sending it to the recipient
+     * financial institution
+     * 
+     * @param pacs The pacs message to validate and send
+     * @return The HTTP response of the sent pacs message
+     */
+    @PostMapping("")
+    public ResponseEntity<String> handlePacs(@RequestBody String pacs) throws Throwable {
+        LOGGER.info("Internal controller handling pacs message.");
+        MxPacs00800109 mxPacs = MxPacs00800109.parse(pacs);
         try {
-            int port = Integer.parseInt(PORT);
-            vs.validateHeader(header, port);
-        } catch (Throwable e) {
-            // TODO: Research if only WebClientResponseException needs to be ignored.
-            if (!(e instanceof WebClientResponseException)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "The entity had an invalid from or to header.");
+            return msgService.sendOutgoing(mxPacs);
+        } catch (NullPointerException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, BAD_PACS);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (WebClientRequestException | SSLHandshakeException e) {
+            Throwable sslEx;
+            if ((sslEx = Exceptions.getCauseOfClass(e, SSLHandshakeException.class)) != null) {
+                if (sslEx.getMessage().contains("bad_certificate")) {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, BAD_INTERNAL_CERT);
+                }
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, BAD_EXTERNAL_CERT);
             }
-        }
-        try {
-            return msgService.send(mx);
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not process the message.");
+            LOGGER.error("Failed to send message to remote financial institution.", e);
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, SEND_FAILURE);
         }
     }
 }
