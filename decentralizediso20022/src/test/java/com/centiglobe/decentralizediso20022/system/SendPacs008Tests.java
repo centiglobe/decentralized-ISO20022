@@ -230,6 +230,15 @@ public class SendPacs008Tests {
         );
     }
 
+    @Test
+    void sendToExternalOldTlsVersion() throws Exception {
+        String exmsg = "protocol_version";
+        SSLHandshakeException e = assertThrows(SSLHandshakeException.class, () ->
+            sendPost(String.format(mx, "localhost", "localhost"), new URL("https://localhost:443/api/v1/pacs"), true, true, "TLSv1.2")
+        );
+        assertTrue(e.getMessage().contains(exmsg), "SSLHandshakeException with message " + e.getMessage() + " did not contain \"" + exmsg + "\".");
+    }
+
     // TODO: Is it possible to test the EXT_SEND_FAILURE error or the BAD_INTERNAL_CERT error?
     // So far they have only been tested manually
 
@@ -254,6 +263,10 @@ public class SendPacs008Tests {
     }
 
     private ResponseEntity<String> sendPost(String mx, URL url, boolean key, boolean trust) throws Exception {
+        return sendPost(mx, url, key, trust, "TLS");
+    }
+
+    private ResponseEntity<String> sendPost(String mx, URL url, boolean key, boolean trust, String protocol) throws Exception {
         byte[] encoded = mx.getBytes("utf-8");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
@@ -264,7 +277,7 @@ public class SendPacs008Tests {
         conn.setRequestProperty("Accept", "application/xml");
         conn.setRequestProperty("Content-Type", "application/xml");
         if (key || trust)
-            configureTruststore((HttpsURLConnection)conn, key, trust);
+            configureTruststore((HttpsURLConnection)conn, key, trust, protocol);
 
         conn.setRequestProperty("Content-Length", "" + encoded.length);
         OutputStream out = conn.getOutputStream();
@@ -301,7 +314,7 @@ public class SendPacs008Tests {
         return con.getResponseCode() > 299;
     }
 
-    private void configureTruststore(HttpsURLConnection connection, boolean keystore, boolean truststore)
+    private void configureTruststore(HttpsURLConnection connection, boolean keystore, boolean truststore, String protocol)
             throws Exception {
         KeyManagerFactory kmf = null;
         TrustManagerFactory tmf = null;
@@ -313,7 +326,7 @@ public class SendPacs008Tests {
             tmf = HTTPSFactory.createTrustManager(new File(TRUST_STORE).getName(), TRUST_PASS);
         }
 
-        SSLContext ctx = SSLContext.getInstance("TLS");
+        SSLContext ctx = SSLContext.getInstance(protocol);
         ctx.init(keystore ? kmf.getKeyManagers() : null, truststore ? tmf.getTrustManagers() : null, new java.security.SecureRandom());
 
         SSLSocketFactory socketFact = ctx.getSocketFactory();
