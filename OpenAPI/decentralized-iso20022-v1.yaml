@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
-  title: Decentralized ISO 20022 Microservice
-  description: This is the API specificaiton for the APIs in the decentralized ISO 20022 microservice.
+  title: Decentralized ISO 20022 Communication Service
+  description: This is the API specificaiton for the APIs in the decentralized ISO 20022 communication service.
   version: 1.0.0
 servers:
   - url: http://api.localhost.com/
