@@ -239,6 +239,16 @@ public class SendPacs008Tests {
         assertTrue(e.getMessage().contains(exmsg), "SSLHandshakeException with message " + e.getMessage() + " did not contain \"" + exmsg + "\".");
     }
 
+    @Test
+    void sendInternalPortNumber() throws Exception {
+        validateResponse(sendPost(String.format(mx, "localhost:8080", "localhost")), HttpStatus.OK, "pacs.002");
+    }
+
+    @Test
+    void sendExternalPortNumber() throws Exception {
+        validateResponse(sendPost(String.format(mx, "localhost", "localhost:443")), HttpStatus.OK, "pacs.002");
+    }
+
     // TODO: Is it possible to test the EXT_SEND_FAILURE error or the BAD_INTERNAL_CERT error?
     // So far they have only been tested manually
 

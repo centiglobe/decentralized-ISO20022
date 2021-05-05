@@ -42,9 +42,10 @@ public class IntValidationService extends ValidationService {
     }
 
     /**
-     * Validates that the domain nested in the From element is contained in the subject
-     * alternative names of the local certificate. May optionally also validate the To
-     * element against a given certificate's subject alternative names.
+     * Validates that the domain nested in the From element without port number
+     * is contained in the subject alternative names of the local certificate. May
+     * optionally also validate the To element without port number against a given
+     * certificate's subject alternative names.
      *
      * @param header The header to validate
      * @param cert The optional certificate to validate the To element against
@@ -54,13 +55,15 @@ public class IntValidationService extends ValidationService {
      *                                  can be obtained via the getMessage method
      */
     public void validateHeader(BusinessAppHdrV02 header, X509Certificate cert) throws IllegalArgumentException, NullPointerException {
-        String fromDomain = header.getFr().getFIId().getFinInstnId().getNm();
+        String from = header.getFr().getFIId().getFinInstnId().getNm();
+        String fromDomain = from.split(":")[0];
 
         if (!hasSubjectAltName(us, fromDomain))
             throw new IllegalArgumentException(String.format(BAD_FROM_HEADER, fromDomain));
 
         if (cert != null) {
-            String toDomain = header.getTo().getFIId().getFinInstnId().getNm();
+            String to = header.getTo().getFIId().getFinInstnId().getNm();
+            String toDomain = to.split(":")[0];
 
             if (!hasSubjectAltName(cert, toDomain))
                 throw new IllegalArgumentException(String.format(BAD_TO_HEADER, toDomain));
