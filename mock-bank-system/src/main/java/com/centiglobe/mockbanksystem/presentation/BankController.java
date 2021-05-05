@@ -50,10 +50,15 @@ public class BankController {
             if (mx == null)
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Bad message.");
 
-            if ("pacs".equals(mx.getBusinessProcess())){
-                MxPacs00800109 pacs008 = (MxPacs00800109) mx;
+            if ("pacs.008.001.09".equals(mx.getMxId().id())){
+                try {
+                    MxPacs00800109 pacs008 = (MxPacs00800109) mx;
 
-                responseMessage = createResponseForPacs008(pacs008);
+                    responseMessage = createResponseForPacs008(pacs008);
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage());
+                    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Message could not be handled.");
+                }
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("Message could not be handled.");
             }

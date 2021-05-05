@@ -2,16 +2,21 @@ package com.centiglobe.mockbanksystem.util;
 
 import java.util.GregorianCalendar;
 
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
- * Util class for creating a string for time compatible with ISO 20022 messages.
+ * A utility class for creating a string for time compatible with ISO 20022 messages.
  * 
  * @author Cactu5
  */
 public class MxTime {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MxTime.class);
+
     /**
      * Returns the current time in <code>XMLGregorianCalendar</code> format.
      * 
@@ -27,7 +32,7 @@ public class MxTime {
         try {
             datatypeFactory = DatatypeFactory.newInstance();
         } catch (DatatypeConfigurationException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage());
         }
         
         XMLGregorianCalendar now = datatypeFactory.newXMLGregorianCalendar(gregorianCalendar);
