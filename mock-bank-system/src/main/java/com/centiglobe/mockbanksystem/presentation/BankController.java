@@ -68,8 +68,7 @@ public class BankController {
         }
     }
 
-    private static MxPacs00200111 createResponseForPacs008(MxPacs00800109 pacs008){
-        
+    private static MxPacs00200111 createResponseForPacs008(MxPacs00800109 pacs008) {
         String orgnlMsgNmId = pacs008.getMxId().toString();
         String orgnlMsgId = pacs008.getFIToFICstmrCdtTrf().getGrpHdr().getMsgId();
 
