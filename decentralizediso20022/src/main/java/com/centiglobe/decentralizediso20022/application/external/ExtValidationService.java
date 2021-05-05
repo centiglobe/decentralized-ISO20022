@@ -45,9 +45,10 @@ public class ExtValidationService extends ValidationService {
     }
 
     /**
-     * Validates that the domain nested in the To element is contained in the subject
-     * alternative names of the local certificate. Also validates the From element against a
-     * given certificate's subject alternative names
+     * Validates that the domain nested in the To element without port number
+     * is contained in the subject alternative names of the local certificate. Also
+     * validates the From element without port number against a given certificate's
+     * subject alternative names
      *
      * @param header The header to validate
      * @param cert The certificate to validate the From element against
@@ -57,8 +58,10 @@ public class ExtValidationService extends ValidationService {
      *                                  can be obtained via the getMessage method
      */
     public void validateHeader(BusinessAppHdrV02 header, X509Certificate cert) throws IllegalArgumentException, NullPointerException {
-        String toDomain = header.getTo().getFIId().getFinInstnId().getNm();
-        String fromDomain = header.getFr().getFIId().getFinInstnId().getNm();
+        String to = header.getTo().getFIId().getFinInstnId().getNm();
+        String from = header.getFr().getFIId().getFinInstnId().getNm();
+        String toDomain = to.split(":")[0];
+        String fromDomain = from.split(":")[0];
 
         if (!hasSubjectAltName(us, toDomain))
             throw new IllegalArgumentException(String.format(BAD_TO_HEADER, toDomain));
