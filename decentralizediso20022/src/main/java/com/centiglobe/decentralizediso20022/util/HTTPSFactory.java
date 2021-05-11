@@ -30,7 +30,7 @@ public class HTTPSFactory {
      * Creates a key manager and configures security rules. Parameters cannot be
      * <code>NULL</code>.
      * 
-     * @param truststorePath the path to the keystore
+     * @param keystorePath the path to the keystore
      * @param password       the password for the keystore
      * @return The key manger
      * @throws KeyStoreException                  if there is a problem with the

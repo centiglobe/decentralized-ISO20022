@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        repository: ${{ github.repository }}
+        repository: cactu5/decentralized-ISO20022-1
 
     - name: Checkout to active branch
       run: |
@@ -26,3 +26,15 @@ jobs:
         docker build -t mockbanksystem mock-bank-system
         docker run -d --network=mynetwork --name=mockbanksystem mockbanksystem
         docker build --network=mynetwork -t decentralizediso20022 -f decentralizediso20022/Dockerfile-ci decentralizediso20022
+
+    - name: Generate Javadoc
+      run: |
+        cd decentralizediso20022
+        mvn javadoc:javadoc
+
+    - name: Upload Javadoc
+      uses: actions/upload-artifact@v2
+      with:
+        name: javadoc
+        path: decentralizediso20022/docs/apidocs/
+
