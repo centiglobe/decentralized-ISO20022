@@ -68,9 +68,8 @@ public class IntMessageService {
      * @throws NullPointerException if the given message is null or lacks fields
      * @throws IllegalArgumentException if the given message is not valid. The reason
      *                                  can be obtained via the getMessage method
-     * @throws WebClientRequestException if, for example, a secure TLS session could not be
+     * @throws Throwable if, for example, a secure TLS session could not be
      *                                   established with the recipient
-     * @throws Throwable if sending the message failed
      */
     public ResponseEntity<String> sendOutgoing(AbstractMX mx) throws Throwable {
         vs.validateMessage(mx, null);

@@ -57,9 +57,11 @@ public class IntPacsController {
      * 
      * @param pacs The pacs message to validate and send
      * @return The HTTP response of the sent pacs message
+     *
+     * @throws Throwable if the validation or sending of the message failed
      */
     @PostMapping("")
-    public ResponseEntity<String> handlePacs(@RequestBody String pacs) throws Throwable {
+    public ResponseEntity<String> handlePacs(@RequestBody String pacs) throws Throwable{
         LOGGER.info("Internal controller handling pacs message.");
         MxPacs00800109 mxPacs = MxPacs00800109.parse(pacs);
         try {
