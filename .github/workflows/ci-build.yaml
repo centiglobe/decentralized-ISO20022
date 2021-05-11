@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        repository: ${{ github.repository }}
+        repository: cactu5/decentralized-ISO20022-1
 
     - name: Checkout to active branch
       run: |
