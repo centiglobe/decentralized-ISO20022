@@ -28,41 +28,32 @@ paths:
           content:
             application/xml:
               schema: 
-                type: array
-                items: 
-                  type: string
+                $ref: '#/components/schemas/RequestPayloadPacs.002.001.11'
         '400':
           description: An error message indicating that the message was invalid.
           content:
             application/xml:
               schema: 
-                type: array
-                items: 
-                  type: string
+                $ref: '#/components/schemas/BadRequest'
+                  
         '403':
           description: An error message indicating that the sender could not be authenticated. (The receiver is assumed to be authenticated)
           content:
             application/xml:
               schema: 
-                type: array
-                items: 
-                  type: string
+                $ref: '#/components/schemas/Forbidden'
         '500':
           description: An error message indicating that an unknown error occurred.
           content:
             application/xml:
               schema: 
-                type: array
-                items: 
-                  type: string
+                $ref: '#/components/schemas/Internal Server Error'
         '502':
           description: An error message indicating that the message could not be sent to the private financial institution handler.
           content:
             application/xml:
               schema: 
-                type: array
-                items: 
-                  type: string
+                $ref: '#/components/schemas/Bad Gateway'
 components:
   schemas:
     AppHdr:
@@ -148,7 +139,7 @@ components:
                   type: string
                   format: data-time
                   example: '2021-05-05T12:45:21.818Z'
-                  description: sdsda
+                  description: Date and time at which the message was created.
                 NbOfTxs:
                   type: integer
                   maxLength: 15
@@ -261,6 +252,82 @@ components:
         BICFI:
           type: string
           example: FOOBARC0XXX
+    BadRequest:
+      type: object
+      xml:
+        attribute: false
+        wrapped: false
+        name: error
+      properties:
+        timestamp:
+          type: string
+          example: 2021/05/12 13:56:41
+        status:
+          type: integer
+          example: 400
+        code: 
+          type: string
+          example: BAD REQUEST
+        message:
+          type: string
+          example: The message was not a valid pacs message.
+    Forbidden:
+      type: object
+      xml:
+        attribute: false
+        wrapped: false
+        name: error
+      properties:
+        timestamp:
+          type: string
+          example: 2021/05/12 13:56:41
+        status:
+          type: integer
+          example: 403
+        code: 
+          type: string
+          example: FORBIDDEN
+        message:
+          type: string
+          example: a message describing the problem
+    Internal Server Error:
+      type: object
+      xml:
+        attribute: false
+        wrapped: false
+        name: error
+      properties:
+        timestamp:
+          type: string
+          example: 2021/05/12 13:56:41
+        status:
+          type: integer
+          example: 500
+        code: 
+          type: string
+          example: Internal Server Error
+        message:
+          type: string
+          example: a message describing the problem
+    Bad Gateway:
+      type: object
+      xml:
+        attribute: false
+        wrapped: false
+        name: error
+      properties:
+        timestamp:
+          type: string
+          example: 2021/05/12 13:56:41
+        status:
+          type: integer
+          example: 502
+        code: 
+          type: string
+          example: Bad Gateway
+        message:
+          type: string
+          example: a message describing the problem
     RequestPayloadPacs.008.001.09:
       type: object
       required:
@@ -275,4 +342,54 @@ components:
           $ref: '#/components/schemas/AppHdr'
         Document:
           $ref: '#/components/schemas/Document'
+    RequestPayloadPacs.002.001.11:
+      type: object
+      xml:
+        attribute: false
+        wrapped: false
+        name: RequestPayload
+      properties:
+        AppHdr:
+          $ref: '#/components/schemas/AppHdr'
+        Document:
+          type: object
+          properties:
+            xmlns:
+              xml:
+                attribute: true
+                wrapped: false
+              type: string
+              example: urn:iso:std:iso:20022:tech:xsd:pacs.002.001.11
+            FIToFIPmtStsRpt:
+              type: object
+              properties:
+                GrpHdr:
+                  type: object
+                  properties:
+                    MsgId:
+                      type: string
+                      example: ABC735618
+                      description: Point to point reference, as assigned by the instructing party, and sent to the next party in the chain to unambiguously identify the message.
+                      minLength: 1
+                      maxLength: 35
+                    CreDtTm:
+                      type: string
+                      format: data-time
+                      example: '2021-05-05T12:47:21.812Z'
+                      description: Date and time at which the message was created.
+                OrgnlGrpInfAndSts:
+                  type: object
+                  properties:
+                    OrgnlMsgId:
+                      type: string
+                      minLength: 1
+                      maxLength: 35
+                      description: Point to point reference, as assigned by the original instructing party, to unambiguously identify the original message.
+                      example: ABCD05345
+                    OrgnlMsgNmId:
+                      type: string
+                      example: pacs.008.001.09
+                      minLength: 1
+                      maxLength: 35
+                      description: Specifies the original message name identifier to which the message refers.
             
