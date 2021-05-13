@@ -57,6 +57,8 @@ public class IntPacsController {
      * 
      * @param pacs The pacs message to validate and send
      * @return The HTTP response of the sent pacs message
+     *
+     * @throws Throwable if the validation or sending of the message failed
      */
     @PostMapping("")
     public ResponseEntity<String> handlePacs(@RequestBody String pacs) throws Throwable {
