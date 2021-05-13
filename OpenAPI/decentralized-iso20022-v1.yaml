@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Decentralized ISO 20022 Communication Service
-  description: This is the API specificaiton for the external API in the decentralized ISO 20022 communication service.
+  description: This is the API specificaiton for the APIs in the decentralized ISO 20022 communication service.
   version: 1.0.0
 servers:
   - url: http://api.localhost.com/
@@ -16,7 +16,7 @@ paths:
       tags:
         - Internal/External
       summary: Receive a pacs message from another financial institution.
-      description: <strong>Internal:</strong> The endpoint where the financial institution sends the pacs.008.001.09 message to the microservice for validation before forwarding it to the recieving financial institution specified in the 'to' element in the 'AppHdr' element. <br><br><strong>External:</strong> The endpoint from which the microservice receives pacs messages from another financial institution. A valid pacs message should be received with a header head.001.001.02.
+      description: <strong>Internal:</strong> The endpoint where the financial institution sends the pacs.008.001.09 message to the communication service for validation before forwarding it to the recieving financial institution specified in the 'to' element in the 'AppHdr' element. <br><br><strong>External:</strong> The endpoint from which the communication service receives pacs messages from another financial institution. A valid pacs message should be received with a header head.001.001.02.
       requestBody:
         content:
           application/xml:
