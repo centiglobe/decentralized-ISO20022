@@ -289,7 +289,7 @@ components:
           example: FORBIDDEN
         message:
           type: string
-          example: a message describing the problem
+          example: The remote financial institution rejected the message as it was not trusted. Please ask them to add your certificate into their truststore.
     Internal Server Error:
       type: object
       xml:
@@ -308,7 +308,7 @@ components:
           example: Internal Server Error
         message:
           type: string
-          example: a message describing the problem
+          example: Could not process the message. Please try again later.
     Bad Gateway:
       type: object
       xml:
@@ -327,7 +327,7 @@ components:
           example: Bad Gateway
         message:
           type: string
-          example: a message describing the problem
+          example: Failed to send message to the remote financial institution. Double-check that the message's To tag contains the remote financial institution's hostname.
     RequestPayloadPacs.008.001.09:
       type: object
       required:
