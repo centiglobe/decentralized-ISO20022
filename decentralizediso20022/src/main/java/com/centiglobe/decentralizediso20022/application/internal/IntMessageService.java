@@ -14,17 +14,23 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
 
 import com.prowidesoftware.swift.model.mx.BusinessAppHdrV02;
-import com.prowidesoftware.swift.model.mx.MxPacs00200111;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import javax.management.modelmbean.XMLParseException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 
 /**
  * A service for sending outgoing messages to another
@@ -97,9 +103,14 @@ public class IntMessageService {
         } catch (Exception e) {
             throw Exceptions.unwrap(e);
         }
-        if (MxPacs00200111.parse(response.getBody()) == null) {
+
+        // TODO: When error messages are updated to PACS.002 messages instead of
+        // custom formats, MxPacs00200111.parse() should be called instead.
+        try {
+            validateXml(response.getBody());
+        } catch (ParserConfigurationException | SAXException | IOException e) {
             LOGGER.debug("Bad response:\n" + response.getBody());
-            throw new XMLParseException("Received a non-pacs.002 response.");
+            throw new XMLParseException("Received a non-XML response.");
         }
         return response;
     }
@@ -131,5 +142,10 @@ public class IntMessageService {
             LOGGER.error(String.format(BAD_RECIPIENT, host));
             throw new IllegalArgumentException(String.format(BAD_RECIPIENT, host));
         }
+    }
+
+    private void validateXml(String xmlString) throws ParserConfigurationException, SAXException, IOException {
+        XMLReader reader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
+        reader.parse(new InputSource(new StringReader(xmlString)));
     }
 }
