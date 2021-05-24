@@ -7,116 +7,332 @@ servers:
   - url: http://api.localhost.com/
     description: Endpoint example.
 tags:
-  - name: Internal
-    description: For a financial institution to send a message to another financial institution.
-  - name: External
-    description: For a financial institution to receive a message from another financial institution.
+  - name: Internal/External
+    description: '<strong>External:</strong> Recieve ISO 20022 messages from another financial institution. <br><br> <strong>Internal:</strong> Send ISO 20022 messages to another financial institution.'
 
 paths:
   /api/v1/pacs:
     post:
       tags:
-        - Internal
-      summary: Send a pacs message to another financial institution.
-      description: The endpoint where the financial insitution tells the microservice to send a pacs message to another financial institution.<br><br>A valid pacs message should be sent with a header head.001.001.02.
-      requestBody:
-        $ref: '#/components/requestBodies/Pacs.008.001.09Body'
-      responses:
-        '200':
-          description: A pacs.002.001.12 message with the header head.001.001.02.
-          content:
-            application/xml:
-              schema: 
-                type: array
-                items: 
-                  type: string
-        '400':
-          description: An error message indicating that the message was invalid.
-          content:
-            application/xml:
-              schema: 
-                type: array
-                items: 
-                  type: string
-        '403':
-          description: An error message indicating that the sender or the receiver could not be authenticated.
-          content:
-            application/xml:
-              schema: 
-                type: array
-                items: 
-                  type: string
-        '500':
-          description: An error message indicating that an unknown error occurred.
-          content:
-            application/xml:
-              schema: 
-                type: array
-                items: 
-                  type: string
-        '502':
-          description: An error message indicating that the message could not be sent.
-          content:
-            application/xml:
-              schema: 
-                type: array
-                items: 
-                  type: string
-
-  /api/v1/pacs:
-    post:
-      tags:
-        - External
+        - Internal/External
       summary: Receive a pacs message from another financial institution.
-      description: The endpoint from which the microservice receives pacs messages from another financial institution.<br><br>A valid pacs message should be received with a header head.001.001.02.
+      description: <strong>Internal:</strong> The endpoint where the financial institution sends the pacs.008.001.09 message to the communication service for validation before forwarding it to the recieving financial institution specified in the 'to' element in the 'AppHdr' element. <br><br><strong>External:</strong> The endpoint from which the communication service receives pacs messages from another financial institution. A valid pacs message should be received with a header head.001.001.02.
       requestBody:
-        $ref: '#/components/requestBodies/Pacs.008.001.09Body'
+        content:
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/RequestPayloadPacs.008.001.09'
       responses:
         '200':
           description: A pacs.002.001.12 message with the header head.001.001.02.
           content:
             application/xml:
               schema: 
-                type: array
-                items: 
-                  type: string
+                $ref: '#/components/schemas/RequestPayloadPacs.002.001.11'
         '400':
           description: An error message indicating that the message was invalid.
           content:
             application/xml:
               schema: 
-                type: array
-                items: 
-                  type: string
+                $ref: '#/components/schemas/BadRequest'
+                  
         '403':
           description: An error message indicating that the sender could not be authenticated. (The receiver is assumed to be authenticated)
           content:
             application/xml:
               schema: 
-                type: array
-                items: 
-                  type: string
+                $ref: '#/components/schemas/Forbidden'
         '500':
           description: An error message indicating that an unknown error occurred.
           content:
             application/xml:
               schema: 
-                type: array
-                items: 
-                  type: string
+                $ref: '#/components/schemas/Internal Server Error'
         '502':
           description: An error message indicating that the message could not be sent to the private financial institution handler.
           content:
             application/xml:
               schema: 
-                type: array
-                items: 
-                  type: string
-# WIP
+                $ref: '#/components/schemas/Bad Gateway'
 components:
   schemas:
+    AppHdr:
+      type: object
+      required:
+        - Fr
+        - To
+        - BizMsgIdr
+        - MsgDefIdr
+        - CreDt
+        - xmlns
+      properties:
+        xmlns:
+          xml:
+            attribute: true
+            wrapped: false
+          type: string
+          example: urn:iso:std:iso:20022:tech:xsd:head.001.001.02
+        Fr:
+          type: object
+          properties:
+            FIId:
+              $ref: '#/components/schemas/FIId'
+        To:
+          type: object
+          properties:
+            FIId:
+              $ref: '#/components/schemas/FIId'
+        BizMsgIdr:
+          type: string
+          example: ABC403294
+          description: Unambiguously identifies the Business Message to the MessagingEndpoint that has created the Business Message.
+          minLength: 1
+          maxLength: 35
+        MsgDefIdr:
+          type: string
+          example: pacs.008.001.09
+          description: Contains the MessageIdentifier that defines the BusinessMessage. It must contain a MessageIdentifier published on the ISO 20022 website.
+          minLength: 1
+          maxLength: 35
+        CreDt:
+          type: string
+          format: data-time
+          example: '2021-05-05T12:45:21.818Z'
+          description: Date and time when this Business Message (header) was created.
+    FIId:
+      type: object
+      properties:
+        FinInstnId:
+          type: object
+          properties:
+            Nm:
+              type: string
+              example: exampledomain.com
+              description: the domain
+              minLength: 1
+              maxLength: 140     
+    Document:
+      type: object
+      required:
+        - xmlns
+        - FIToFICstmrCdtTrf
+      properties:
+        xmlns:
+          xml:
+            attribute: true
+            wrapped: false
+          type: string
+          example: urn:iso:std:iso:20022:tech:xsd:pacs.008.001.09
+        FIToFICstmrCdtTrf:
+          type: object
+          properties:
+            GrpHdr:
+              type: object
+              properties:
+                MsgId:
+                  type: string
+                  example: ABCD05345
+                  description: Point to point reference, as assigned by the instructing party, and sent to the next party in the chain to unambiguously identify the message.
+                  minLength: 1
+                  maxLength: 35
+                CreDtTm:
+                  type: string
+                  format: data-time
+                  example: '2021-05-05T12:45:21.818Z'
+                  description: Date and time at which the message was created.
+                NbOfTxs:
+                  type: integer
+                  maxLength: 15
+                  example: 1
+                  description: Number of individual transactions contained in the message.
+                SttlmInf:
+                  type: object
+                  properties:
+                    SttlmMtd:
+                      type: string
+                      enum:
+                        - INDA
+                        - INGA
+                        - COVE
+                        - CLRG
+                      example: INDA
+                      description: Method used to settle the (batch of) payment instructions.
+            CdtTrfTxInf:
+              type: object
+              properties:
+                PmtId:
+                  type: object
+                  properties:
+                    EndToEndId:
+                      type: string
+                      example: ABCDE42395
+                      description: Unique identification, as assigned by the initiating party, to unambiguously identify the transaction. This identification is passed on, unchanged, throughout the entire end-to-end chain.
+                      minLength: 1
+                      maxLength: 35
+                    UETR:
+                      type: string
+                      format: uuid
+                      example: df4309a2-0705-481c-a714-cbd999549fd1
+                      description: Universally unique identifier to provide an end-to-end reference of a payment transaction.
+                IntrBkSttlmAmt:
+                  type: object
+                  description: Amount of money moved between the instructing agent and the instructed agent.
+                  properties:
+                    Ccy:
+                      type: string
+                      example: EUR
+                      xml:
+                        attribute: true
+                        wrapped: false
+                    # openApi does not support xml elements
+                    # with attributes that also have a value
+                    onlyUseValueRemoveThisTag:
+                      type: number
+                      example: 100
+                      description: This should only be a value, openApi does not support xml elements with attributes that also have a value.  
+                ChrgBr:
+                  type: string
+                  enum:
+                    - DEBT
+                    - CRED
+                    - SHAR
+                    - SLEV
+                  description: Specifies which party/parties will bear the charges associated with the processing of the payment transaction.
+                  example: DEBT
+                Dbtr:
+                  type: object
+                  properties:
+                    Nm:
+                      $ref: '#/components/schemas/Nm'
+                    PstlAdr:
+                      $ref: '#/components/schemas/PstlAdr'
+                DbtrAgt:
+                  type: object
+                  properties:
+                    FinInstnId:
+                      $ref: '#/components/schemas/FinInstnId'
+                CdtrAgt:
+                  type: object
+                  properties:
+                    FinInstnId:
+                      type: object
+                      description: Unique and unambiguous identification of a financial institution, as assigned under an internationally recognised or proprietary identification scheme.
+                      properties:
+                        BICFI:
+                          type: string
+                          example: BANKANC0XXX
+                Cdtr:
+                  type: object
+                  properties:
+                    Nm:
+                      type: string
+                      example: TEST CORP
+                      description: Name by which a party iand which is usually used to identiparty.
+                      minLength: 1
+                      maxLength: 140  
+                    PstlAdr:
+                      $ref: '#/components/schemas/PstlAdr'
+    PstlAdr:
+      type: object
+      properties:
+        AdrLine:
+          type: string
+          example: 310 Field Road, NY
+          description: Informatiand identifies a specidefined by postal servicefree format text.
+          maxLength: 70             
+    Nm:
+      type: string
+      example: Joe Doe
+      description: Name by which a party iand which is usually used to identiparty.
+      maxLength: 140
+    FinInstnId:
+      type: object
+      description: Unique and unambiguous identification of a financial institution, as assigned under an internationally recognised or proprietary identification scheme.
+      properties:
+        BICFI:
+          type: string
+          example: FOOBARC0XXX
+    BadRequest:
+      type: object
+      xml:
+        attribute: false
+        wrapped: false
+        name: error
+      properties:
+        timestamp:
+          type: string
+          example: 2021/05/12 13:56:41
+        status:
+          type: integer
+          example: 400
+        code: 
+          type: string
+          example: BAD REQUEST
+        message:
+          type: string
+          example: The message was not a valid pacs message.
+    Forbidden:
+      type: object
+      xml:
+        attribute: false
+        wrapped: false
+        name: error
+      properties:
+        timestamp:
+          type: string
+          example: 2021/05/12 13:56:41
+        status:
+          type: integer
+          example: 403
+        code: 
+          type: string
+          example: FORBIDDEN
+        message:
+          type: string
+          example: The remote financial institution rejected the message as it was not trusted. Please ask them to add your certificate into their truststore.
+    Internal Server Error:
+      type: object
+      xml:
+        attribute: false
+        wrapped: false
+        name: error
+      properties:
+        timestamp:
+          type: string
+          example: 2021/05/12 13:56:41
+        status:
+          type: integer
+          example: 500
+        code: 
+          type: string
+          example: Internal Server Error
+        message:
+          type: string
+          example: Could not process the message. Please try again later.
+    Bad Gateway:
+      type: object
+      xml:
+        attribute: false
+        wrapped: false
+        name: error
+      properties:
+        timestamp:
+          type: string
+          example: 2021/05/12 13:56:41
+        status:
+          type: integer
+          example: 502
+        code: 
+          type: string
+          example: Bad Gateway
+        message:
+          type: string
+          example: Failed to send message to the remote financial institution. Double-check that the message's To tag contains the remote financial institution's hostname.
     RequestPayloadPacs.008.001.09:
       type: object
+      required:
+        - AppHdr
+        - Document
       xml:
         attribute: false
         wrapped: false
@@ -126,27 +342,54 @@ components:
           $ref: '#/components/schemas/AppHdr'
         Document:
           $ref: '#/components/schemas/Document'
-    AppHdr:
-      type: object
-      properties:
-        something:
-          type: string
-    Document:
-      type: object
-      properties:
-        something:
-          type: string
     RequestPayloadPacs.002.001.11:
       type: object
-  requestBodies:
-    Pacs.008.001.09Body:
-      content:
-        application/xml:
-          schema:
-           $ref: '#/components/schemas/RequestPayloadPacs.008.001.09'
-    Pacs.002.001.11Body:
-      content:
-        application/xml:
-          schema:
-           $ref: '#/components/schemas/RequestPayloadPacs.008.001.09'
+      xml:
+        attribute: false
+        wrapped: false
+        name: RequestPayload
+      properties:
+        AppHdr:
+          $ref: '#/components/schemas/AppHdr'
+        Document:
+          type: object
+          properties:
+            xmlns:
+              xml:
+                attribute: true
+                wrapped: false
+              type: string
+              example: urn:iso:std:iso:20022:tech:xsd:pacs.002.001.11
+            FIToFIPmtStsRpt:
+              type: object
+              properties:
+                GrpHdr:
+                  type: object
+                  properties:
+                    MsgId:
+                      type: string
+                      example: ABC735618
+                      description: Point to point reference, as assigned by the instructing party, and sent to the next party in the chain to unambiguously identify the message.
+                      minLength: 1
+                      maxLength: 35
+                    CreDtTm:
+                      type: string
+                      format: data-time
+                      example: '2021-05-05T12:47:21.812Z'
+                      description: Date and time at which the message was created.
+                OrgnlGrpInfAndSts:
+                  type: object
+                  properties:
+                    OrgnlMsgId:
+                      type: string
+                      minLength: 1
+                      maxLength: 35
+                      description: Point to point reference, as assigned by the original instructing party, to unambiguously identify the original message.
+                      example: ABCD05345
+                    OrgnlMsgNmId:
+                      type: string
+                      example: pacs.008.001.09
+                      minLength: 1
+                      maxLength: 35
+                      description: Specifies the original message name identifier to which the message refers.
             
