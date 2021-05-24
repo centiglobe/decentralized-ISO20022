@@ -2,6 +2,7 @@ package com.centiglobe.decentralizediso20022.presentation.internal;
 
 import org.slf4j.LoggerFactory;
 
+import javax.management.modelmbean.XMLParseException;
 import javax.net.ssl.SSLHandshakeException;
 
 import com.centiglobe.decentralizediso20022.annotation.ApiVersion;
@@ -46,6 +47,9 @@ public class IntPacsController {
     @Value("${message.internal-send-failure}")
     private String SEND_FAILURE;
 
+    @Value("${message.bad-response}")
+    private String BAD_RESPONSE;
+
     @Autowired
     private IntMessageService msgService;
 
@@ -80,6 +84,8 @@ public class IntPacsController {
             }
             LOGGER.error("Failed to send message to remote financial institution.", e);
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, SEND_FAILURE);
+        } catch (XMLParseException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, BAD_RESPONSE);
         }
     }
 }
