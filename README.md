@@ -46,7 +46,9 @@ The technologies used in the project.
 The following instructions describe how to run a demo of the system using a mock financial institution handler (mock bank system) and the default configuration.
    1. Start the communication service and mock bank system by running `docker-compose -f docker-compose.demo.yml up --build`.
    2. Send a post request to `http://localhost:8080/api/v1/pacs` containing a `pacs.008` message in the message body.
-      An example request payload can be found in `examples/demo/docker-demo.xml`.
+      An example request payload can be found in `examples/demo/docker-demo.xml`. There are many ways of doing this, below
+      is an example using *cURL*:
+      `curl -X POST http://localhost:8080/api/v1/pacs -H "Content-Type: application/xml" -d @examples/messages/demo/docker-demo.xml`
    3. If successful the response should contain a `pacs.002` message, otherwise an error message explaining what went wrong.
 
 ## 6. How To Use

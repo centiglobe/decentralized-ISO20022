@@ -14,14 +14,23 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
 
 import com.prowidesoftware.swift.model.mx.BusinessAppHdrV02;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import javax.management.modelmbean.XMLParseException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 
 /**
  * A service for sending outgoing messages to another
@@ -60,7 +69,7 @@ public class IntMessageService {
 
     /**
      * Sends an ISO 20022 message, if it is valid, using HTTPS to its dedicated endpoint at the
-     * recipent host and returns the response returned, regardless of its status
+     * recipent host and returns the response returned, if it was valid.
      *
      * @param mx The ISO 20022 message to send
      * @return The HTTP response sent by the recipent host
@@ -68,15 +77,18 @@ public class IntMessageService {
      * @throws NullPointerException if the given message is null or lacks fields
      * @throws IllegalArgumentException if the given message is not valid. The reason
      *                                  can be obtained via the getMessage method
+     * @throws XMLParseException if the response received from the remote financial
+     *                           institution could not be understood or validated
      * @throws Throwable if, for example, a secure TLS session could not be
-     *                                   established with the recipient
+     *                   established with the recipient
      */
     public ResponseEntity<String> sendOutgoing(AbstractMX mx) throws Throwable {
         vs.validateMessage(mx, null);
         
         URI uri = endpointOf(mx);
+        ResponseEntity<String> response;
         try {
-            return webClientBuilder
+            response = webClientBuilder
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE).build().post().uri(uri)
                 .bodyValue(mx.message()).retrieve().onStatus(HttpStatus::isError, (resp -> {
                     if (resp.statusCode().is4xxClientError()) {
@@ -91,6 +103,16 @@ public class IntMessageService {
         } catch (Exception e) {
             throw Exceptions.unwrap(e);
         }
+
+        // TODO: When error messages are updated to PACS.002 messages instead of
+        // custom formats, MxPacs00200111.parse() should be called instead.
+        try {
+            validateXml(response.getBody());
+        } catch (ParserConfigurationException | SAXException | IOException e) {
+            LOGGER.debug("Bad response:\n" + response.getBody());
+            throw new XMLParseException("Received a non-XML response.");
+        }
+        return response;
     }
 
     /**
@@ -120,5 +142,10 @@ public class IntMessageService {
             LOGGER.error(String.format(BAD_RECIPIENT, host));
             throw new IllegalArgumentException(String.format(BAD_RECIPIENT, host));
         }
+    }
+
+    private void validateXml(String xmlString) throws ParserConfigurationException, SAXException, IOException {
+        XMLReader reader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
+        reader.parse(new InputSource(new StringReader(xmlString)));
     }
 }
