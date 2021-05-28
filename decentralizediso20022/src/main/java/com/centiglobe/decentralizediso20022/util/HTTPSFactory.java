@@ -91,7 +91,6 @@ public class HTTPSFactory {
         TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 
         PKIXBuilderParameters pkixParams = new PKIXBuilderParameters(keystore, new X509CertSelector());
-        pkixParams.addCertPathChecker(rc);
 
         tmf.init(new CertPathTrustManagerParameters(pkixParams));
 
