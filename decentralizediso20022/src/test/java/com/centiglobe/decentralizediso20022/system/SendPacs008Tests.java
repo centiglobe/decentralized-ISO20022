@@ -128,12 +128,6 @@ public class SendPacs008Tests {
     }
 
     @Test
-    void sendRevokedToTest() throws Exception {
-        validateResponse(sendPost(String.format(mx, "localhost", "revoked.badssl.com")), HttpStatus.FORBIDDEN,
-                BAD_EXTERNAL_CERT);
-    }
-
-    @Test
     void sendInvalidFromTest() throws Exception {
         validateResponse(sendPost(String.format(mx, "self-signed.badssl.com", "localhost")), HttpStatus.BAD_REQUEST,
                 String.format(BAD_FROM_HEADER, "self-signed.badssl.com"));

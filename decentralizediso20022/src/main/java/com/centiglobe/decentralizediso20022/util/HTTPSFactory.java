@@ -90,15 +90,6 @@ public class HTTPSFactory {
 
         TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 
-        // initialize certification path checking for the offered certificates and
-        // revocation checks against CLRs
-        CertPathBuilder cpb = CertPathBuilder.getInstance("PKIX");
-        PKIXRevocationChecker rc = (PKIXRevocationChecker) cpb.getRevocationChecker();
-        rc.setOptions(EnumSet.of(PKIXRevocationChecker.Option.PREFER_CRLS, // prefer CLR over OCSP
-                PKIXRevocationChecker.Option.SOFT_FAIL, PKIXRevocationChecker.Option.NO_FALLBACK));
-        // TODO: Remove SOFT_FAIL and change to ONLY_END_ENTITY
-        // and don't fall back to OCSP checking.
-
         PKIXBuilderParameters pkixParams = new PKIXBuilderParameters(keystore, new X509CertSelector());
         pkixParams.addCertPathChecker(rc);
 
