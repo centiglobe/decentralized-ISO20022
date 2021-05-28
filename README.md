@@ -174,3 +174,6 @@ Start the communication service by running `docker-compose -f docker-compose.ext
 ## 8. Software Architecture
 An architecture of the software, which follows domain driven design.
 ![Software Architecture](images/software-architecture.png)
+
+Javadoc for the software can be found by navigating to "Actions", then clicking the latest workflow run, followed by "javadoc"
+under "Artifacts". You must be signed in to download the javadoc.
