@@ -7,14 +7,8 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.CertPathBuilder;
 import java.security.cert.CertificateException;
-import java.security.cert.PKIXBuilderParameters;
-import java.security.cert.PKIXRevocationChecker;
-import java.security.cert.X509CertSelector;
-import java.util.EnumSet;
 
-import javax.net.ssl.CertPathTrustManagerParameters;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 
@@ -90,9 +84,7 @@ public class HTTPSFactory {
 
         TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 
-        PKIXBuilderParameters pkixParams = new PKIXBuilderParameters(keystore, new X509CertSelector());
-
-        tmf.init(new CertPathTrustManagerParameters(pkixParams));
+        tmf.init(keystore);
 
         return tmf;
     }
