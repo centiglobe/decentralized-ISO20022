@@ -7,8 +7,14 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.CertPathBuilder;
 import java.security.cert.CertificateException;
+import java.security.cert.PKIXBuilderParameters;
+import java.security.cert.PKIXRevocationChecker;
+import java.security.cert.X509CertSelector;
+import java.util.EnumSet;
 
+import javax.net.ssl.CertPathTrustManagerParameters;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 
@@ -84,7 +90,19 @@ public class HTTPSFactory {
 
         TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 
-        tmf.init(keystore);
+        // Note: Since only self-signed certificates should be used, revocation checks are effectively unneeded.
+	// However, it is still done here in case there is a legitimate reason to use certificate chains.
+        CertPathBuilder cpb = CertPathBuilder.getInstance("PKIX");
+        PKIXRevocationChecker rc = (PKIXRevocationChecker) cpb.getRevocationChecker();
+        rc.setOptions(EnumSet.of(PKIXRevocationChecker.Option.PREFER_CRLS, // prefer CLR over OCSP
+                PKIXRevocationChecker.Option.SOFT_FAIL, PKIXRevocationChecker.Option.NO_FALLBACK));
+        // TODO: Remove SOFT_FAIL and change to ONLY_END_ENTITY
+        // and don't fall back to OCSP checking.
+
+        PKIXBuilderParameters pkixParams = new PKIXBuilderParameters(keystore, new X509CertSelector());
+        pkixParams.addCertPathChecker(rc);
+
+        tmf.init(new CertPathTrustManagerParameters(pkixParams));
 
         return tmf;
     }
