@@ -90,8 +90,8 @@ public class HTTPSFactory {
 
         TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 
-        // initialize certification path checking for the offered certificates and
-        // revocation checks against CLRs
+        // Note: Since only self-signed certificates should be used, revocation checks are effectively unneeded.
+	// However, it is still done here in case there is a legitimate reason to use certificate chains.
         CertPathBuilder cpb = CertPathBuilder.getInstance("PKIX");
         PKIXRevocationChecker rc = (PKIXRevocationChecker) cpb.getRevocationChecker();
         rc.setOptions(EnumSet.of(PKIXRevocationChecker.Option.PREFER_CRLS, // prefer CLR over OCSP
